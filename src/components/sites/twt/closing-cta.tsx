@@ -1,39 +1,47 @@
 import { ArrowRight } from "lucide-react";
-import { CLOSING } from "./content";
+import { CLOSING, type ClosingContent } from "./content";
 import { SiteLink } from "./site-link";
 
-/** The deep-green call to action that ends the portfolio and about pages. */
-export function ClosingCta() {
+/**
+ * The deep-green call to action that ends the portfolio, about and service pages. The words come
+ * from CLOSING unless a page passes its own.
+ */
+export function ClosingCta({ content = CLOSING }: { content?: ClosingContent }) {
   return (
     <section aria-labelledby="closing-heading" className="bg-forest text-cream">
       <div className="mx-auto flex max-w-[1760px] flex-col items-center px-5 py-20 text-center sm:px-8 lg:px-[6.56vw] lg:py-28">
         <p className="text-[13px] leading-none font-medium tracking-[0.28em] text-cream/70 uppercase">
-          {CLOSING.eyebrow}
+          {content.eyebrow}
         </p>
         <h2
           id="closing-heading"
           className="mt-4 text-[clamp(2rem,3.6vw,3.5rem)] leading-[1.08] font-normal italic"
         >
-          {CLOSING.headline}
+          {content.headline}
         </h2>
-        <p className="mt-5 max-w-[30rem] text-[17px] leading-[1.4] text-cream/85">{CLOSING.body}</p>
+        <p className="mt-5 max-w-[30rem] text-[17px] leading-[1.4] text-cream/85">{content.body}</p>
         <SiteLink
-          href={CLOSING.button.href}
+          href={content.button.href}
           className="group mt-9 inline-flex h-11 items-center gap-2.5 bg-cream px-[30px] text-[15px] leading-none tracking-[0.02em] text-ink transition-colors duration-300 outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-forest"
         >
-          {CLOSING.button.label}
+          {content.button.label}
           <ArrowRight
             className="size-[13px] transition-transform duration-300 group-hover:translate-x-0.5"
             strokeWidth={1.3}
             aria-hidden="true"
           />
         </SiteLink>
-        <SiteLink
-          href={CLOSING.secondary.href}
-          className="tap-target mt-3 border-b border-cream/50 pb-[3px] text-[15px] leading-none text-cream/85 transition-colors duration-300 outline-none hover:border-cream hover:text-cream focus-visible:border-cream focus-visible:text-cream"
-        >
-          {CLOSING.secondary.label}
-        </SiteLink>
+        <div className="mt-3 flex flex-col items-center sm:flex-row sm:gap-x-8">
+          {content.secondary.map((link) => (
+            <SiteLink
+              key={link.href}
+              href={link.href}
+              className="tap-target border-b border-cream/50 pb-[3px] text-[15px] leading-none text-cream/85 transition-colors duration-300 outline-none hover:border-cream hover:text-cream focus-visible:border-cream focus-visible:text-cream"
+            >
+              {link.label}
+            </SiteLink>
+          ))}
+        </div>
       </div>
     </section>
   );

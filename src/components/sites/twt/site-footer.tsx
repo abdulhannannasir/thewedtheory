@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { BRAND, FOOTER, NAV, SOCIAL } from "./content";
+import { SERVICE_PAGES, SERVICE_SLUGS, serviceHref } from "./services-content";
 import { SiteLink } from "./site-link";
 
 const footerLink =
@@ -10,7 +11,7 @@ const footerLink =
 export function SiteFooter() {
   return (
     <footer className="border-t border-line bg-ivory">
-      <div className="mx-auto grid max-w-[1760px] gap-12 px-5 py-14 sm:px-8 lg:grid-cols-[1.4fr_1fr_1fr] lg:gap-16 lg:px-[6.56vw] lg:py-16">
+      <div className="mx-auto grid max-w-[1760px] gap-12 px-5 py-14 sm:px-8 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-16 lg:px-[6.56vw] lg:py-16">
         <div>
           <Link href="/" aria-label={BRAND.logo.alt} className="inline-block outline-none">
             <Image
@@ -36,6 +37,21 @@ export function SiteFooter() {
               <li key={link.href}>
                 <SiteLink href={link.href} className={footerLink}>
                   {link.label}
+                </SiteLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <nav aria-label={FOOTER.servicesLabel}>
+          <p className="text-[10px] leading-none font-medium tracking-[0.22em] text-ink-soft uppercase">
+            {FOOTER.servicesLabel}
+          </p>
+          <ul className="mt-3 flex flex-col lg:mt-5 lg:gap-3.5">
+            {SERVICE_SLUGS.map((slug) => (
+              <li key={slug}>
+                <SiteLink href={serviceHref(slug)} className={footerLink}>
+                  {SERVICE_PAGES[slug].name}
                 </SiteLink>
               </li>
             ))}

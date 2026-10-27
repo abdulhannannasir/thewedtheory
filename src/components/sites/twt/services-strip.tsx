@@ -49,21 +49,29 @@ export function ServicesStrip() {
         {SERVICES.items.map((item) => (
           <li
             key={item.id}
-            className="flex items-center gap-5 border-t border-line py-5 first:border-t-0 max-sm:text-left sm:flex-col sm:gap-0 sm:border-t-0 sm:border-l sm:px-3 sm:py-0 sm:text-center sm:first:border-l-0 lg:mt-[11px] lg:h-[80px]"
+            className="border-t border-line first:border-t-0 sm:border-t-0 sm:border-l sm:first:border-l-0 lg:mt-[11px] lg:h-[80px]"
           >
-            <ServiceGlyph name={item.icon} className="size-7 shrink-0 text-ink" />
-            <div className="sm:contents">
-              <h3 className="text-[15px] leading-none font-medium text-ink sm:mt-2 sm:text-[14px]">
-                {item.title}
-              </h3>
-              <p className="mt-2 text-[12px] leading-[14px] text-ink-soft sm:mt-1.5 sm:text-[11px] sm:leading-[13.5px]">
-                {item.blurb.map((line) => (
-                  <span key={line} className="block">
-                    {line}
-                  </span>
-                ))}
-              </p>
-            </div>
+            <SiteLink
+              href={item.href}
+              className="group flex h-full items-center gap-5 py-5 outline-none max-sm:text-left focus-visible:ring-2 focus-visible:ring-forest/40 sm:flex-col sm:gap-0 sm:px-3 sm:py-0 sm:text-center"
+            >
+              <ServiceGlyph
+                name={item.icon}
+                className="size-7 shrink-0 text-ink transition-transform duration-500 ease-out motion-safe:group-hover:-translate-y-0.5"
+              />
+              <div className="sm:contents">
+                <h3 className="text-[15px] leading-none font-medium text-ink transition-colors duration-300 group-hover:text-ink-soft sm:mt-2 sm:text-[14px]">
+                  {item.title}
+                </h3>
+                <p className="mt-2 text-[12px] leading-[14px] text-ink-soft sm:mt-1.5 sm:text-[11px] sm:leading-[13.5px]">
+                  {item.blurb.map((line) => (
+                    <span key={line} className="block">
+                      {line}
+                    </span>
+                  ))}
+                </p>
+              </div>
+            </SiteLink>
           </li>
         ))}
       </ul>

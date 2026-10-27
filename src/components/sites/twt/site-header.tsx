@@ -10,6 +10,10 @@ import { cn } from "@/lib/utils";
 import { BRAND, NAV } from "./content";
 import { SiteLink } from "./site-link";
 
+/** The home link is current only on the home page; any other link also stays lit on the pages inside it (Services on /services/birthdays). */
+const isCurrent = (href: string, pathname: string) =>
+  href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+
 const navLink =
   "border-b pb-2 text-[15px] leading-none tracking-[0.02em] text-ink transition-colors duration-300 outline-none focus-visible:border-ink";
 
@@ -30,7 +34,7 @@ export function SiteHeader() {
         <div className="flex items-start">
           <nav aria-label="Primary" className="mt-4 hidden gap-x-[30px] pt-[11px] lg:flex">
             {NAV.links.map((link) => {
-              const active = link.href === pathname;
+              const active = isCurrent(link.href, pathname);
               return (
                 <Link
                   key={link.href}

@@ -5,6 +5,7 @@ import { ArrowRight, ChevronDown } from "lucide-react";
 import { useSearchString } from "@/hooks/use-search-string";
 import { cn } from "@/lib/utils";
 import { CONTACT, whatsapp } from "./content";
+import { eventTypeForService } from "./services-content";
 import { readTheoryPrefill } from "./theory";
 import { THEMES } from "./theory-content";
 
@@ -87,9 +88,13 @@ export function ContactForm() {
   const [errors, setErrors] = useState<Errors>({});
   const [sentUrl, setSentUrl] = useState<string | null>(null);
   // Arriving from a quiz result: the address carries the result and the answers, which start the form off.
-  const prefill = readTheoryPrefill(useSearchString());
+  const search = useSearchString();
+  const prefill = readTheoryPrefill(search);
+  // Arriving from a service page: ?service=birthdays chooses the event type.
+  const eventType =
+    prefill?.eventType ?? eventTypeForService(new URLSearchParams(search).get("service")) ?? "";
   // The two prefilled fields are uncontrolled, so they start over when a prefill arrives or changes.
-  const fresh = prefill?.themeId ?? "none";
+  const fresh = `${prefill?.themeId ?? "none"}-${eventType}`;
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -151,7 +156,7 @@ export function ContactForm() {
             <div className="relative">
               <select
                 {...props}
-                defaultValue={prefill?.eventType ?? ""}
+                defaultValue={eventType}
                 className={cn(control, "h-11 appearance-none pr-7 invalid:text-ink-soft/60")}
               >
                 <option value="" disabled>

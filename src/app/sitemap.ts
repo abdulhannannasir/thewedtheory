@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { SERVICE_SLUGS, SERVICES_PAGE, serviceHref } from "@/components/sites/twt/services-content";
 import { THEME_IDS } from "@/components/sites/twt/theory-content";
 import { SITE_URL } from "@/lib/site";
 
@@ -6,6 +7,8 @@ import { SITE_URL } from "@/lib/site";
 export default function sitemap(): MetadataRoute.Sitemap {
   const paths = [
     "/",
+    SERVICES_PAGE.path,
+    ...SERVICE_SLUGS.map(serviceHref),
     "/portfolio",
     "/about",
     "/contact",

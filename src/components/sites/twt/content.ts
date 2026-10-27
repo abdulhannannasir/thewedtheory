@@ -40,7 +40,7 @@ export const NAV = {
   /** The first link whose `href` equals the current path is shown as the current page. */
   links: [
     { label: "Home", href: "/" },
-    { label: "Services", href: "/#services" },
+    { label: "Services", href: "/services" },
     { label: "Portfolio", href: "/portfolio" },
     { label: "About", href: "/about" },
   ],
@@ -94,23 +94,26 @@ export const SERVICES = {
   kicker: "Our Services",
   intro:
     "We offer tailored planning and coordination for weddings, social events and corporate functions in Lahore.",
-  link: { label: "Explore Services", href: "/#services" },
+  link: { label: "Explore Services", href: "/services" },
   items: [
     {
       id: "weddings",
       icon: "rings",
+      href: "/services/weddings",
       title: "Weddings",
       blurb: ["Your special day,", "thoughtfully planned."],
     },
     {
       id: "social-events",
       icon: "sprig",
+      href: "/services/social-events",
       title: "Social Events",
       blurb: ["Meaningful celebrations,", "beautifully executed."],
     },
     {
       id: "corporate-events",
       icon: "briefcase",
+      href: "/services/corporate-events",
       title: "Corporate Events",
       blurb: ["Professional events", "with a personal touch."],
     },
@@ -122,7 +125,14 @@ export const SERVICES = {
   kicker: string;
   intro: string;
   link: Link;
-  items: readonly { id: string; icon: ServiceIcon; title: string; blurb: readonly string[] }[];
+  items: readonly {
+    id: string;
+    icon: ServiceIcon;
+    /** The service's own page. */
+    href: string;
+    title: string;
+    blurb: readonly string[];
+  }[];
   tagline: readonly string[];
 };
 
@@ -144,12 +154,22 @@ export const FOOTER = {
   tagline: "Thoughtfully planned. Beautifully celebrated.",
   location: "Lahore, Pakistan",
   exploreLabel: "Explore",
+  servicesLabel: "Celebrations",
   /** Pages listed after the main navigation in the footer's Explore list. */
   moreLinks: [{ label: "Find your theory", href: "/theory" }],
   contactLabel: "Contact",
 } as const;
 
-/** The closing call to action at the bottom of the portfolio and about pages. */
+export type ClosingContent = {
+  eyebrow: string;
+  headline: string;
+  body: string;
+  button: Link;
+  /** Quieter next steps for visitors who are not ready to message us yet. */
+  secondary: readonly Link[];
+};
+
+/** The closing call to action at the bottom of the portfolio and about pages (the service pages have their own). */
 export const CLOSING = {
   eyebrow: "Begin",
   headline: "Let’s plan your event.",
@@ -159,8 +179,8 @@ export const CLOSING = {
     href: whatsapp("Hello The Wed Theory, I’d like to plan an event."),
   },
   /** A quieter second step for visitors who are not ready to message us yet. */
-  secondary: { label: "Not sure yet? Find your Wed Theory", href: "/theory" },
-} as const;
+  secondary: [{ label: "Not sure yet? Find your Wed Theory", href: "/theory" }],
+} as const satisfies ClosingContent;
 
 export type PortfolioItem = {
   id: string;
@@ -312,6 +332,7 @@ export const NOT_FOUND = {
   intro: "The address may have changed, or it never existed. These will take you somewhere lovely.",
   links: [
     { label: "Back to the front page", href: "/" },
+    { label: "See our services", href: "/services" },
     { label: "See our portfolio", href: "/portfolio" },
     { label: "Find your Wed Theory", href: "/theory" },
     { label: "Get in touch", href: "/contact" },
@@ -370,7 +391,7 @@ export const CONTACT = {
         label: "Event type",
         summary: "Event",
         placeholder: "Choose one",
-        options: ["Wedding", "Social event", "Corporate event", "Something else"],
+        options: ["Wedding", "Birthday", "Social event", "Corporate event", "Something else"],
         error: "Please choose the kind of event.",
       },
       date: {

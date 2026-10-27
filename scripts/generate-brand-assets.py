@@ -9,15 +9,18 @@ Needs Pillow (`pip install pillow`) and an internet connection the first time, t
 Cormorant Garamond font (SIL Open Font License) from Google's font repository. Fonts are used only to
 draw these images; nothing from them ships to visitors.
 
-Re-run it whenever the logo, the hero photo or the quiz results' names, taglines, palettes or photos
-change. The quiz copy lives in src/components/sites/twt/theory-content.ts: keep THEMES below in step
-with it.
+Re-run it whenever the logo, the hero photo, the quiz results' names, taglines, palettes or photos, or
+a service's name, headline or photo change. The quiz copy lives in
+src/components/sites/twt/theory-content.ts and the service copy in services-content.ts: keep THEMES
+and SERVICE_CARDS below in step with them. (The service photos themselves come from
+scripts/fetch-service-photos.py.)
 
 Writes:
   src/app/favicon.ico, src/app/icon.png, src/app/apple-icon.png
   public/icons/icon-192.png, icon-512.png, icon-maskable-512.png   (the web app manifest)
   public/share/site.jpg, quiz.jpg, <result>.jpg                    (the share cards: the site, the quiz
                                                                     and each of its four results)
+  public/share/services.jpg, service-<slug>.jpg                    (the services page and each service)
 """
 
 import os
@@ -76,6 +79,35 @@ THEMES = {
         "palette": ["#e6d4aa", "#b8923f", "#f4efe3", "#1f160d"],
         "photo": "images/lighting-ambience.jpg",
         "focus": (0.5, 0.3),
+    },
+}
+
+
+# Keep in step with SERVICE_PAGES in src/components/sites/twt/services-content.ts.
+SERVICE_CARDS = {
+    "weddings": {
+        "kicker": "WEDDINGS",
+        "title": ["Your day,", "thoughtfully planned."],
+        "photo": "images/grand-entrance.jpg",
+        "focus": (0.5, 0.55),
+    },
+    "birthdays": {
+        "kicker": "BIRTHDAYS",
+        "title": ["Birthdays worth", "the candles."],
+        "photo": "images/services/birthdays/hero.jpg",
+        "focus": (0.5, 0.4),
+    },
+    "social-events": {
+        "kicker": "SOCIAL EVENTS",
+        "title": ["Gatherings,", "beautifully held."],
+        "photo": "images/services/social-events/hero.jpg",
+        "focus": (0.5, 0.45),
+    },
+    "corporate-events": {
+        "kicker": "CORPORATE EVENTS",
+        "title": ["Events that", "reflect your brand."],
+        "photo": "images/services/corporate-events/hero.jpg",
+        "focus": (0.42, 0.5),
     },
 }
 
@@ -225,6 +257,55 @@ def write_result_cards(serif: str, serif_italic: str):
         save_card(im, PUBLIC / "share" / f"{slug}.jpg")
 
 
+def fit_italic(draw, text, path, max_width, start=96, weight=400):
+    """The largest italic size, from `start` down, at which `text` fits in `max_width`."""
+    size = start
+    while size > 40:
+        f = font(path, size, weight)
+        if draw.textlength(text, font=f) <= max_width:
+            return f
+        size -= 2
+    return font(path, 40, weight)
+
+
+def write_service_cards(serif: str, serif_italic: str):
+    text_width = PANEL_X - 72 - 36
+    for slug, c in SERVICE_CARDS.items():
+        im = card_base(c["photo"], c["focus"])
+        d = ImageDraw.Draw(im)
+        draw_tracked(d, (72, 96), c["kicker"], font(serif, 20, 500), INK_SOFT, 4.4)
+        f1 = fit_italic(d, c["title"][0], serif_italic, text_width, 92)
+        f2 = fit_italic(d, c["title"][1], serif_italic, text_width, 92)
+        size = min(f1.size, f2.size)
+        f = font(serif_italic, size, 400)
+        d.text((72, 146), c["title"][0], font=f, fill=INK)
+        d.text((72, 146 + round(size * 1.08)), c["title"][1], font=f, fill=INK)
+        draw_tracked(
+            d, (72, 540), "THE WED THEORY EVENTS  ·  LAHORE", font(serif, 16, 500), INK_SOFT, 3.6
+        )
+        save_card(im, PUBLIC / "share" / f"service-{slug}.jpg")
+
+    # The services page: all four photographs in a grid.
+    im = Image.new("RGB", (W, H), IVORY)
+    tile_w, tile_h = (W - PANEL_X) // 2, H // 2
+    for i, c in enumerate(SERVICE_CARDS.values()):
+        tile = cover(Image.open(PUBLIC / c["photo"]).convert("RGB"), (tile_w, tile_h), c["focus"])
+        im.paste(tile, (PANEL_X + (i % 2) * tile_w, (i // 2) * tile_h))
+    d = ImageDraw.Draw(im)
+    draw_tracked(d, (72, 120), "SERVICES", font(serif, 20, 500), INK_SOFT, 4.4)
+    d.text((72, 168), "Every celebration,", font=font(serif, 78, 400), fill=INK)
+    d.text((72, 258), "designed with care.", font=font(serif_italic, 78, 400), fill=INK)
+    d.text(
+        (72, 396),
+        "Weddings, birthdays, social events",
+        font=font(serif_italic, 32, 400),
+        fill=INK_SOFT,
+    )
+    d.text((72, 436), "and corporate events.", font=font(serif_italic, 32, 400), fill=INK_SOFT)
+    draw_tracked(d, (72, 540), "THE WED THEORY EVENTS  ·  LAHORE", font(serif, 16, 500), INK_SOFT, 3.6)
+    save_card(im, PUBLIC / "share" / "services.jpg")
+
+
 def main():
     if not (PUBLIC / "images" / "twt-logo.png").exists():
         sys.exit("run this from the repository (public/images/twt-logo.png not found)")
@@ -236,6 +317,7 @@ def main():
     write_site_card(serif, serif_italic)
     write_quiz_card(serif, serif_italic)
     write_result_cards(serif, serif_italic)
+    write_service_cards(serif, serif_italic)
     print("done")
 
 
