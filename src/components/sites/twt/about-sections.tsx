@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Reveal } from "@/components/ui/reveal";
 import { ABOUT, SERVICES } from "./content";
 import { ServiceGlyph } from "./icons";
 
@@ -52,9 +53,17 @@ export function AboutApproach() {
   );
 }
 
-/** How we work: four numbered steps split by hairlines, like the services strip on the front page. */
-export function AboutProcess() {
-  const { process } = ABOUT;
+type ProcessContent = {
+  kicker: string;
+  title: string;
+  steps: readonly { title: string; body: string }[];
+};
+
+/**
+ * How we work: four numbered steps split by hairlines, like the services strip on the front page.
+ * The service pages pass their own steps; the steps rise in one after another as they scroll into view.
+ */
+export function AboutProcess({ process = ABOUT.process }: { process?: ProcessContent }) {
   return (
     <section aria-labelledby="process-heading" className="border-t border-line">
       <div className="mx-auto max-w-[1760px] px-5 py-16 sm:px-8 lg:px-[6.56vw] lg:py-24">
@@ -64,8 +73,10 @@ export function AboutProcess() {
         </h2>
         <ol className="mt-12 grid gap-0 sm:grid-cols-2 lg:grid-cols-4">
           {process.steps.map((step, index) => (
-            <li
+            <Reveal
+              as="li"
               key={step.title}
+              delay={index * 110}
               className="border-t border-line py-7 sm:px-6 sm:first:pl-0 lg:border-t-0 lg:border-l lg:py-1 lg:first:border-l-0"
             >
               <span className="text-[12px] leading-none tracking-[0.2em] text-ink-soft">
@@ -77,7 +88,7 @@ export function AboutProcess() {
               <p className="mt-3 max-w-[18rem] text-[15.5px] leading-[1.45] text-ink-soft">
                 {step.body}
               </p>
-            </li>
+            </Reveal>
           ))}
         </ol>
       </div>

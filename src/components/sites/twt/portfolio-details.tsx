@@ -1,12 +1,20 @@
-import { MasonryGallery } from "@/components/ui/masonry-gallery";
+import { MasonryGallery, type MasonryItem } from "@/components/ui/masonry-gallery";
 import { PORTFOLIO_DETAILS } from "./content";
+
+type DetailsContent = {
+  kicker: string;
+  title: string;
+  intro: string;
+  items: readonly MasonryItem[];
+};
 
 /**
  * The close-up gallery under the portfolio's five collections: a heading, then a masonry whose
- * tiles glide in as they scroll into view. Captions show on hover (mouse) or always (touch).
+ * tiles glide in as they scroll into view. Captions show on hover (mouse) or always (touch). The
+ * service pages reuse it with their own pictures.
  */
-export function PortfolioDetails() {
-  const { kicker, title, intro, items } = PORTFOLIO_DETAILS;
+export function PortfolioDetails({ details = PORTFOLIO_DETAILS }: { details?: DetailsContent }) {
+  const { kicker, title, intro, items } = details;
   return (
     <section
       aria-labelledby="details-heading"

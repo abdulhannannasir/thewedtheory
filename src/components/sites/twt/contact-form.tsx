@@ -2,8 +2,12 @@
 
 import { useState, type FormEvent } from "react";
 import { ArrowRight, ChevronDown } from "lucide-react";
+import { useSearchString } from "@/hooks/use-search-string";
 import { cn } from "@/lib/utils";
 import { CONTACT, whatsapp } from "./content";
+import { eventTypeForService } from "./services-content";
+import { readTheoryPrefill } from "./theory";
+import { THEMES } from "./theory-content";
 
 const { form } = CONTACT;
 
@@ -83,6 +87,14 @@ function Field({ name, error, required, className, children }: FieldProps) {
 export function ContactForm() {
   const [errors, setErrors] = useState<Errors>({});
   const [sentUrl, setSentUrl] = useState<string | null>(null);
+  // Arriving from a quiz result: the address carries the result and the answers, which start the form off.
+  const search = useSearchString();
+  const prefill = readTheoryPrefill(search);
+  // Arriving from a service page: ?service=birthdays chooses the event type.
+  const eventType =
+    prefill?.eventType ?? eventTypeForService(new URLSearchParams(search).get("service")) ?? "";
+  // The two prefilled fields are uncontrolled, so they start over when a prefill arrives or changes.
+  const fresh = `${prefill?.themeId ?? "none"}-${eventType}`;
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -120,6 +132,11 @@ export function ContactForm() {
         {form.title}
       </h2>
       <p className="mt-4 max-w-[30rem] text-[17px] leading-[1.45] text-ink-soft">{form.intro}</p>
+      {prefill && (
+        <p className="mt-5 border-l-2 border-forest pl-4 text-[15.5px] leading-[1.4] text-ink">
+          {form.theoryNote(THEMES[prefill.themeId].name)}
+        </p>
+      )}
 
       <div className="mt-10 grid gap-x-8 gap-y-8 sm:grid-cols-2">
         <Field name="name" error={errors.name} required>
@@ -134,12 +151,12 @@ export function ContactForm() {
           )}
         </Field>
 
-        <Field name="eventType" error={errors.eventType} required>
+        <Field key={`eventType-${fresh}`} name="eventType" error={errors.eventType} required>
           {(props) => (
             <div className="relative">
               <select
                 {...props}
-                defaultValue=""
+                defaultValue={eventType}
                 className={cn(control, "h-11 appearance-none pr-7 invalid:text-ink-soft/60")}
               >
                 <option value="" disabled>
@@ -197,10 +214,16 @@ export function ContactForm() {
           )}
         </Field>
 
-        <Field name="details" error={errors.details} className="sm:col-span-2">
+        <Field
+          key={`details-${fresh}`}
+          name="details"
+          error={errors.details}
+          className="sm:col-span-2"
+        >
           {(props) => (
             <textarea
               {...props}
+              defaultValue={prefill?.details}
               rows={4}
               placeholder={f.details.placeholder}
               className={cn(control, "resize-y py-3 leading-[1.5]")}
