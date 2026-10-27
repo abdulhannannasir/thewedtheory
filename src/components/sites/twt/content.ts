@@ -423,7 +423,8 @@ export const CONTACT = {
  * THE OPENING ANIMATION
  * The logo reveal plays once, full screen, the first time a visitor opens the home page in a
  * browser session, then dissolves into the hero. It is skipped for visitors who prefer reduced
- * motion, and a Skip button, a click, a tap or the Escape key ends it early.
+ * motion, with Data Saver on and on slow (2G or 3G) connections, and a Skip button, a click, a tap or
+ * the Escape key ends it early.
  *
  * VIDEO RULES: square, with a FLAT background of exactly `background` so the edges disappear into
  * the page, and the logo centred. Keep it small (this one is about 430 KB): it is fetched on the

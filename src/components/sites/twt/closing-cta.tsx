@@ -31,14 +31,18 @@ export function ClosingCta({ content = CLOSING }: { content?: ClosingContent }) 
             aria-hidden="true"
           />
         </SiteLink>
-        <div className="mt-3 flex flex-col items-center sm:flex-row sm:gap-x-8">
+        <div className="flex flex-col items-center sm:flex-row sm:gap-x-8">
           {content.secondary.map((link) => (
+            // A full 44px box so neighbouring links are easy to tell apart with a thumb; the
+            // underline is on the text inside.
             <SiteLink
               key={link.href}
               href={link.href}
-              className="tap-target border-b border-cream/50 pb-[3px] text-[15px] leading-none text-cream/85 transition-colors duration-300 outline-none hover:border-cream hover:text-cream focus-visible:border-cream focus-visible:text-cream"
+              className="group inline-flex min-h-11 items-center text-[15px] leading-none text-cream/85 transition-colors duration-300 outline-none hover:text-cream focus-visible:text-cream"
             >
-              {link.label}
+              <span className="border-b border-cream/50 pb-[3px] transition-colors duration-300 group-hover:border-cream group-focus-visible:border-cream">
+                {link.label}
+              </span>
             </SiteLink>
           ))}
         </div>

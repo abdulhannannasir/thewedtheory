@@ -68,6 +68,7 @@ export function SiteHeader() {
                     alt=""
                     width={BRAND.logo.width}
                     height={BRAND.logo.height}
+                    sizes="150px"
                     className="h-auto w-[150px]"
                   />
                   <Dialog.Close
@@ -86,8 +87,9 @@ export function SiteHeader() {
                     <SiteLink
                       key={link.href}
                       href={link.href}
+                      aria-current={isCurrent(link.href, pathname) ? "page" : undefined}
                       onClick={() => setMenuOpen(false)}
-                      className="font-serif text-[34px] leading-none font-light tracking-[0.01em] outline-none focus-visible:underline focus-visible:underline-offset-8"
+                      className="font-serif text-[34px] leading-none font-light tracking-[0.01em] outline-none focus-visible:underline focus-visible:underline-offset-8 aria-[current=page]:underline aria-[current=page]:decoration-ink/40 aria-[current=page]:underline-offset-8"
                     >
                       {link.label}
                     </SiteLink>
