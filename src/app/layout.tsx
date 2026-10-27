@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Mrs_Saint_Delafield } from "next/font/google";
 import { BRAND } from "@/components/sites/twt/content";
+import { SiteHeader } from "@/components/sites/twt/site-header";
 import "./globals.css";
 
 // The brand's serif: high-contrast, light and italic-friendly, for every line of text on the site.
@@ -19,7 +20,10 @@ const script = Mrs_Saint_Delafield({
 });
 
 export const metadata: Metadata = {
-  title: `${BRAND.fullName} | Event Planning & Design in ${BRAND.city}`,
+  title: {
+    default: `${BRAND.fullName} | Event Planning & Design in ${BRAND.city}`,
+    template: `%s | ${BRAND.fullName}`,
+  },
   description: `Thoughtfully planned, beautifully celebrated. ${BRAND.name} plans tailored weddings, social events and corporate functions in ${BRAND.city}.`,
 };
 
@@ -33,8 +37,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${script.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html
+      lang="en"
+      data-scroll-behavior="smooth"
+      className={`${cormorant.variable} ${script.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col">
+        <SiteHeader />
+        {children}
+      </body>
     </html>
   );
 }
