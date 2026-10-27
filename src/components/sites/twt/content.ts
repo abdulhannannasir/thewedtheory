@@ -330,6 +330,13 @@ export const ABOUT = {
     kicker: "What we plan",
     title: "Events of every kind",
   },
+  /** The pile of photographs (the cards are the portfolio's five collections). */
+  moments: {
+    kicker: "Moments",
+    title: "A few we keep coming back to",
+    body: "Entrances, stages, florals, tables and light from the events we design most. Drag a card aside, tap the pile or use the arrows to see the next.",
+    stackLabel: "Photographs of our work, one card at a time",
+  },
 } as const;
 
 /** The page shown for an address that does not exist. */
