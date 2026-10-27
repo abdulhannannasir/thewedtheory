@@ -1,0 +1,146 @@
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Dialog } from "@base-ui/react/dialog";
+import { ArrowRight, Menu, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { BRAND, NAV } from "./content";
+import { SiteLink } from "./site-link";
+
+const navLink =
+  "border-b pb-2 text-[15px] leading-none tracking-[0.02em] text-ink transition-colors duration-300 outline-none focus-visible:border-ink";
+
+const pill =
+  "inline-flex h-[38px] items-center gap-2.5 rounded-full bg-forest px-[25px] text-[15px] leading-none tracking-[0.02em] text-cream transition-colors duration-300 outline-none hover:bg-[#3b4936] focus-visible:ring-2 focus-visible:ring-forest/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream";
+
+/**
+ * Sits over the top of the hero: navigation on the left, the logo in the middle, Contact and the
+ * Enquire pill on the right. Below `lg` the links move into a full-screen menu.
+ */
+export function SiteHeader() {
+  const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <header className="absolute inset-x-0 top-0 z-30">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center px-5 pt-4 sm:px-8 lg:items-start lg:pt-[26px] lg:pr-[4.14vw] lg:pl-[6.56vw]">
+        <div className="flex items-start">
+          <nav aria-label="Primary" className="mt-4 hidden gap-x-[30px] pt-[11px] lg:flex">
+            {NAV.links.map((link) => {
+              const active = link.href === pathname;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    navLink,
+                    active ? "border-ink/60" : "border-transparent hover:border-ink/40",
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}>
+            <Dialog.Trigger
+              aria-label={NAV.menuOpen}
+              className="-ml-2 inline-flex size-10 items-center justify-center text-ink outline-none focus-visible:ring-2 focus-visible:ring-forest/50 lg:hidden"
+            >
+              <Menu className="size-6" strokeWidth={1.2} aria-hidden="true" />
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Popup className="fixed inset-0 z-50 flex flex-col bg-ivory px-5 pt-4 pb-10 text-ink outline-none transition-opacity duration-300 data-ending-style:opacity-0 data-starting-style:opacity-0 sm:px-8">
+                <Dialog.Title className="sr-only">{NAV.menuLabel}</Dialog.Title>
+                <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+                  <span />
+                  <Image
+                    src={BRAND.logo.src}
+                    alt=""
+                    width={BRAND.logo.width}
+                    height={BRAND.logo.height}
+                    className="h-auto w-[150px]"
+                  />
+                  <Dialog.Close
+                    aria-label={NAV.menuClose}
+                    className="-mr-2 inline-flex size-10 items-center justify-center justify-self-end outline-none focus-visible:ring-2 focus-visible:ring-forest/50"
+                  >
+                    <X className="size-6" strokeWidth={1.2} aria-hidden="true" />
+                  </Dialog.Close>
+                </div>
+
+                <nav
+                  aria-label="Mobile"
+                  className="flex flex-1 flex-col items-center justify-center gap-7"
+                >
+                  {[...NAV.links, NAV.contact].map((link) => (
+                    <SiteLink
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMenuOpen(false)}
+                      className="font-serif text-[34px] leading-none font-light tracking-[0.01em] outline-none focus-visible:underline focus-visible:underline-offset-8"
+                    >
+                      {link.label}
+                    </SiteLink>
+                  ))}
+                  <SiteLink
+                    href={NAV.enquire.href}
+                    onClick={() => setMenuOpen(false)}
+                    className={cn(pill, "mt-3 h-12 px-8 text-[17px]")}
+                  >
+                    {NAV.enquire.label}
+                    <ArrowRight className="size-[18px]" strokeWidth={1.3} aria-hidden="true" />
+                  </SiteLink>
+                </nav>
+              </Dialog.Popup>
+            </Dialog.Portal>
+          </Dialog.Root>
+        </div>
+
+        <Link
+          href="/"
+          aria-label={BRAND.logo.alt}
+          className="block outline-none focus-visible:ring-2 focus-visible:ring-forest/50 lg:absolute lg:top-[26px] lg:left-1/2 lg:-translate-x-1/2"
+        >
+          <Image
+            src={BRAND.logo.src}
+            alt={BRAND.logo.alt}
+            width={BRAND.logo.width}
+            height={BRAND.logo.height}
+            preload
+            sizes="(min-width: 1024px) 23vw, 150px"
+            className="h-auto w-[150px] sm:w-[190px] lg:w-[22.65vw] lg:max-w-[360px]"
+          />
+        </Link>
+
+        <div className="col-start-3 flex items-start justify-end gap-x-[30px] lg:mt-4">
+          <SiteLink
+            href={NAV.contact.href}
+            className={cn(
+              navLink,
+              "hidden border-transparent pt-[11px] hover:border-ink/40 lg:block",
+            )}
+          >
+            {NAV.contact.label}
+          </SiteLink>
+          <SiteLink
+            href={NAV.enquire.href}
+            className={cn(pill, "h-9 px-4 text-sm lg:h-[38px] lg:px-[25px] lg:text-[15px]")}
+          >
+            {NAV.enquire.label}
+            <ArrowRight
+              className="size-[13px] lg:size-[14px]"
+              strokeWidth={1.3}
+              aria-hidden="true"
+            />
+          </SiteLink>
+        </div>
+      </div>
+    </header>
+  );
+}
