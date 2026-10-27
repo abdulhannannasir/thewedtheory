@@ -5,6 +5,7 @@ import { SITE_CARD } from "@/lib/metadata";
 import { SITE_URL } from "@/lib/site";
 import { BRAND } from "@/components/sites/twt/content";
 import { INTRO_GUARD_SCRIPT } from "@/components/sites/twt/intro";
+import { InstagramButton } from "@/components/sites/twt/instagram-button";
 import { IntroSplash } from "@/components/sites/twt/intro-splash";
 import { SiteHeader } from "@/components/sites/twt/site-header";
 import "./globals.css";
@@ -75,6 +76,7 @@ export default function RootLayout({
         <IntroSplash />
         <SiteHeader />
         {children}
+        <InstagramButton />
         <Analytics />
       </body>
     </html>
