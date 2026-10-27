@@ -108,6 +108,8 @@ export function contactLink(themeId: ThemeId, answers: Answers): string {
 
 export interface TheoryPrefill {
   themeId: ThemeId;
+  /** The result's name, for the note above the form. */
+  themeName: string;
   /** The label of the form's event type option, when the visitor said what they are celebrating. */
   eventType?: string;
   /** Text for the form's "anything else" box. */
@@ -124,6 +126,7 @@ export function readTheoryPrefill(search: string): TheoryPrefill | undefined {
   const lines = describeAnswers(answers, ["event"]);
   return {
     themeId,
+    themeName: THEMES[themeId].name,
     eventType: labelOf(stepById("event"), answers.event),
     details: [`My Wed Theory: ${THEMES[themeId].name}`, ...lines].join("\n"),
   };

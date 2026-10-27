@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import { BRAND } from "@/components/sites/twt/content";
-import { Hero } from "@/components/sites/twt/hero";
+import { CinematicJourney } from "@/components/sites/twt/cinematic-journey";
+import { ContactSection } from "@/components/sites/twt/contact-section";
 import { LocalBusinessSchema } from "@/components/sites/twt/local-business-schema";
-import { ServicesStrip } from "@/components/sites/twt/services-strip";
+import { PlanningProcess } from "@/components/sites/twt/planning-process";
+import { PortfolioSection } from "@/components/sites/twt/portfolio-section";
+import { ServicesOverview } from "@/components/sites/twt/services-overview";
+import { SiteFooter } from "@/components/sites/twt/site-footer";
 
 // The home page keeps the full default title from the layout; this adds its canonical link.
 export const metadata: Metadata = {
@@ -10,14 +14,24 @@ export const metadata: Metadata = {
   title: { absolute: `${BRAND.fullName} | Event Planning & Design in ${BRAND.city}` },
 };
 
+/**
+ * The front page: the scrolling journey (hero, three event environments, finale), then the services,
+ * how an enquiry becomes a plan, a look at the work, and the enquiry form.
+ */
 export default function Home() {
   return (
-    <div className="relative flex min-h-svh flex-col">
+    <>
       <LocalBusinessSchema />
-      <main className="flex flex-1 flex-col">
-        <Hero />
-        <ServicesStrip />
+      <main id="main" className="flex-1">
+        <CinematicJourney />
+        <ServicesOverview />
+        <PlanningProcess />
+        <PortfolioSection />
+        <div className="bg-ivory">
+          <ContactSection />
+        </div>
       </main>
-    </div>
+      <SiteFooter />
+    </>
   );
 }

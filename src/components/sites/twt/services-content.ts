@@ -12,6 +12,7 @@
  */
 
 import type { MasonryItem } from "@/components/ui/masonry-gallery";
+import { ENQUIRY } from "@/config/business";
 import { PORTFOLIO, PORTFOLIO_DETAILS, whatsapp, type ClosingContent } from "./content";
 
 export const SERVICE_SLUGS = [
@@ -30,7 +31,7 @@ export interface ServicePageContent {
   name: string;
   /** One line for the cards on the services page and for search results. */
   summary: string;
-  /** The label of the matching enquiry form option (see CONTACT.form.fields.eventType). */
+  /** The label of the matching enquiry form option (see ENQUIRY.eventTypes in src/config/business.ts). */
   eventType: string;
   eyebrow: string;
   /** Two lines; the second one is set in italic. */
@@ -60,7 +61,7 @@ export interface ServicePageContent {
   card: { src: string; alt: string };
 }
 
-/** The enquiry form with this service's event type already chosen (see ContactForm). */
+/** The enquiry form with this service's event type already chosen (see EnquiryForm). */
 const enquiryForm = (slug: ServiceSlug) => ({
   label: "Or use the enquiry form",
   href: `/contact?service=${slug}#enquire`,
@@ -79,7 +80,7 @@ const WEDDINGS: ServicePageContent = {
   slug: "weddings",
   name: "Weddings",
   summary: "Your special day, thoughtfully planned.",
-  eventType: "Wedding",
+  eventType: ENQUIRY.serviceEventTypes["weddings"],
   eyebrow: "Weddings",
   headline: ["Your day,", "thoughtfully planned."],
   intro:
@@ -183,7 +184,7 @@ const BIRTHDAYS: ServicePageContent = {
   slug: "birthdays",
   name: "Birthdays",
   summary: "Parties designed around the person at the centre.",
-  eventType: "Birthday",
+  eventType: ENQUIRY.serviceEventTypes["birthdays"],
   eyebrow: "Birthdays",
   headline: ["Birthdays worth", "the candles."],
   intro:
@@ -378,7 +379,7 @@ const SOCIAL_EVENTS: ServicePageContent = {
   slug: "social-events",
   name: "Social Events",
   summary: "Meaningful celebrations, beautifully executed.",
-  eventType: "Social event",
+  eventType: ENQUIRY.serviceEventTypes["social-events"],
   eyebrow: "Social Events",
   headline: ["Gatherings,", "beautifully held."],
   intro:
@@ -573,7 +574,7 @@ const CORPORATE_EVENTS: ServicePageContent = {
   slug: "corporate-events",
   name: "Corporate Events",
   summary: "Professional events with a personal touch.",
-  eventType: "Corporate event",
+  eventType: ENQUIRY.serviceEventTypes["corporate-events"],
   eyebrow: "Corporate Events",
   headline: ["Events that", "reflect your brand."],
   intro:
@@ -767,10 +768,6 @@ export const serviceHref = (slug: ServiceSlug) => `/services/${slug}`;
 
 export const isServiceSlug = (value: unknown): value is ServiceSlug =>
   typeof value === "string" && (SERVICE_SLUGS as readonly string[]).includes(value);
-
-/** The enquiry form's event type for an address like /contact?service=birthdays, or nothing. */
-export const eventTypeForService = (slug: string | null): string | undefined =>
-  isServiceSlug(slug) ? SERVICE_PAGES[slug].eventType : undefined;
 
 /** The services overview page, and the labels the service pages share. */
 export const SERVICES_PAGE = {

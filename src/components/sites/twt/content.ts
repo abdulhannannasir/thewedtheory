@@ -13,6 +13,10 @@
  */
 
 import type { MasonryItem } from "@/components/ui/masonry-gallery";
+import { ENQUIRY, WHATSAPP_DISPLAY, WHATSAPP_URL, whatsapp } from "@/config/business";
+
+/** The WhatsApp number and helper live in src/config/business.ts; they are re-exported for the pages that already import them from here. */
+export { whatsapp };
 
 export type Link = { label: string; href: string };
 
@@ -29,12 +33,6 @@ export const BRAND = {
     alt: "The Wed Theory Events",
   },
 } as const;
-
-/** https://wa.me/<country code + number, digits only>. Opens a chat with that number. */
-const WHATSAPP = "https://wa.me/923137027761";
-
-/** A WhatsApp link that opens with the first line of the message already typed. */
-export const whatsapp = (message: string) => `${WHATSAPP}?text=${encodeURIComponent(message)}`;
 
 export const NAV = {
   /** The first link whose `href` equals the current path is shown as the current page. */
@@ -55,18 +53,19 @@ export const NAV = {
 } as const;
 
 export const HERO = {
-  eyebrow: "Event Planning & Design",
+  eyebrow: "Event Planning & Design · Lahore",
   /** Two lines; the second one is set in italic. */
-  headline: ["Thoughtfully planned.", "Beautifully celebrated."],
+  headline: ["The Art of", "Celebration"],
+  tagline: "Your story, beautifully brought to life.",
   /** Each entry is one line on screens wide enough to hold it. */
   intro: [
-    "From intimate gatherings to grand celebrations,",
-    "we plan events that reflect your story.",
+    "From intimate gatherings to extraordinary celebrations,",
+    "we design and coordinate events that feel unmistakably yours.",
   ],
-  cta: {
-    label: "Plan Your Event",
-    href: whatsapp("Hello The Wed Theory, I’d like to plan an event."),
-  },
+  /** Goes to the enquiry form lower on this page, which also offers WhatsApp. */
+  cta: { label: "Plan Your Event", href: "#enquire" },
+  /** Scrolls into the first venue. */
+  secondaryCta: { label: "Explore Our World", href: "#scene-weddings" },
   photo: {
     src: "/images/custom-table.jpg",
     width: 2400,
@@ -141,7 +140,7 @@ export const SERVICES = {
  * ---------------------------------------------------------------------------------------------- */
 
 export const SOCIAL = {
-  whatsapp: { label: "WhatsApp", display: "+92 313 7027761", href: WHATSAPP },
+  whatsapp: { label: "WhatsApp", display: WHATSAPP_DISPLAY, href: WHATSAPP_URL },
   /** https://www.instagram.com/<handle without the @>/ */
   instagram: {
     label: "Instagram",
@@ -309,7 +308,7 @@ export const ABOUT = {
     title: "From first conversation to final toast",
     steps: [
       {
-        title: "Listen",
+        title: "Discover",
         body: "We begin with a conversation about your story, your guests and how you want the day to feel.",
       },
       {
@@ -359,17 +358,18 @@ export const NOT_FOUND = {
 };
 
 /**
- * THE CONTACT PAGE
- * There is no server behind this site, so the enquiry form hands over to WhatsApp: it builds a
- * message from the visitor's answers and opens a chat with the number above. Nothing is stored.
- * To receive enquiries another way (an email service, a CRM), replace `onSubmit` in
- * contact-form.tsx; the copy, labels and options below can stay.
+ * THE ENQUIRY (the contact page, and the end of the front page)
+ * The form sends the enquiry to /api/enquiry, which delivers it to the destination configured on the
+ * server (README, "Receiving enquiries"). When no destination is configured, or delivery fails, the
+ * form says so plainly and offers the same answers as a ready-made WhatsApp message instead. It never
+ * says an enquiry was sent unless it reached a destination. The number, event types and budget
+ * ranges are in src/config/business.ts; the words are below.
  */
 export const CONTACT = {
   eyebrow: "Contact",
   headline: ["Tell us about", "your celebration."],
   intro:
-    "Share a few details and we’ll pick up the conversation on WhatsApp. Prefer to message us directly? You can reach us any of the ways below.",
+    "Share a few details and we’ll pick up the conversation. Prefer to message us directly? You can reach us any of the ways below.",
   details: {
     kicker: "Reach us",
     whatsappNote: "Chat with us directly",
@@ -379,55 +379,90 @@ export const CONTACT = {
   form: {
     id: "enquire",
     title: "Enquire about your event",
-    intro: "Tell us a little about your day and we’ll pick up the conversation on WhatsApp.",
-    submitLabel: "Send via WhatsApp",
-    /** First line of the WhatsApp message the form prepares for the visitor to send. */
+    intro:
+      "Your name, a number we can reach you on and the kind of event are all we need to begin. Everything else just helps us prepare.",
+    submitLabel: "Send enquiry",
+    sendingLabel: "Sending…",
+    /** First line of the WhatsApp message the form can prepare for the visitor to send. */
     messageGreeting: "Hello The Wed Theory, I’d like to enquire about an event.",
-    privacyNote: "Your details open in WhatsApp as a message. Nothing is stored on this website.",
     requiredNote: "Fields marked * are required.",
+    privacyNote:
+      "Your details are sent to The Wed Theory so we can reply to your enquiry, and we use them for nothing else. By sending, you agree that we may contact you on the number you give.",
     /** Shown above the fields when the visitor arrives from a quiz result. */
     theoryNote: (name: string) =>
       `Your answers from the quiz (${name}) are already filled in. Change anything you like.`,
+    /** Shown only when the enquiry has really reached its destination. */
     sent: {
-      title: "Your enquiry is ready",
-      body: "WhatsApp should have opened with your details. If it didn’t, use the link below.",
+      title: "Thank you. Your enquiry has reached us.",
+      body: "We’ll reply on the number you gave, usually on WhatsApp.",
+      whatsappNote: "Would rather talk now?",
       linkLabel: "Open WhatsApp",
+      newLabel: "Send another enquiry",
     },
-    /** `summary` is the short label each answer gets in the WhatsApp message. */
+    /** Shown when the enquiry could not be delivered: nothing has been sent. */
+    unavailable: {
+      title: "We couldn’t send this online",
+      body: "Nothing has been sent yet. Your answers are ready as a WhatsApp message instead: tap the button and send it to us there.",
+      linkLabel: "Continue on WhatsApp",
+      retryLabel: "Try sending again",
+    },
+    /** Shown above the fields when some answers need a second look. */
+    fixErrors: "Please check the highlighted fields.",
     fields: {
       name: {
         label: "Your name",
-        summary: "Name",
         placeholder: "Full name",
-        error: "Please tell us your name.",
+        errors: {
+          required: "Please tell us your name.",
+          tooLong: "Please keep your name under 80 characters.",
+        },
+      },
+      phone: {
+        label: "WhatsApp or phone number",
+        placeholder: "0313 7027761 or +92 313 7027761",
+        help: "We’ll reply on this number, usually on WhatsApp.",
+        errors: {
+          required: "Please add a number we can reach you on.",
+          invalid: "That doesn’t look like a phone number. Try 0313 7027761 or +92 313 7027761.",
+        },
       },
       eventType: {
         label: "Event type",
-        summary: "Event",
         placeholder: "Choose one",
-        options: ["Wedding", "Birthday", "Social event", "Corporate event", "Something else"],
-        error: "Please choose the kind of event.",
+        options: ENQUIRY.eventTypes,
+        errors: {
+          required: "Please choose the kind of event.",
+          invalid: "Please choose one of the listed event types.",
+        },
       },
       date: {
-        label: "Event date",
-        summary: "Date",
-        placeholder: "Approximate is fine, e.g. December 2026",
-      },
-      guests: {
-        label: "Guests",
-        summary: "Guests",
-        placeholder: "Approximate number",
-        error: "Please enter a whole number, like 150.",
+        label: "Proposed date",
+        help: "Approximate is fine: pick the closest day.",
+        errors: {
+          invalid: "Please pick a valid date.",
+          past: "That date has already passed. Please choose a future date.",
+        },
       },
       venue: {
-        label: "Venue or city",
-        summary: "Venue",
+        label: "Venue or location",
         placeholder: "Or “still deciding”",
+        errors: { tooLong: "Please keep this under 140 characters." },
+      },
+      guests: {
+        label: "Approximate guests",
+        placeholder: "e.g. 150",
+        errors: { invalid: "Please enter a whole number between 1 and 5,000." },
+      },
+      budget: {
+        label: "Budget range (PKR)",
+        placeholder: "Choose a range",
+        options: ENQUIRY.budgetRanges,
+        errors: { invalid: "Please choose one of the listed ranges." },
       },
       details: {
         label: "Anything else we should know?",
-        summary: "Details",
-        placeholder: "Your style, ideas, budget or questions",
+        placeholder: "Your style, ideas, the functions you have in mind, questions",
+        errors: { tooLong: "Please keep this under 1,500 characters." },
       },
     },
   },
@@ -435,36 +470,21 @@ export const CONTACT = {
 
 /**
  * THE OPENING ANIMATION
- * The logo reveal plays once, full screen, the first time a visitor opens the home page in a
- * browser session, then dissolves into the hero. It is skipped for visitors who prefer reduced
- * motion, with Data Saver on and on slow (2G or 3G) connections, and a Skip button, a click, a tap or
- * the Escape key ends it early.
- *
- * VIDEO RULES: square, with a FLAT background of exactly `background` so the edges disappear into
- * the page, and the logo centred. Keep it small (this one is about 430 KB): it is fetched on the
- * first visit. To swap it, replace the files under /public/videos and update the paths and times.
+ * A short, dark reveal: the logo appears in an arch of light, the brand line follows, then the arch
+ * opens onto the hero. It plays once per browser session, only when someone opens the home page, and
+ * never for visitors who prefer reduced motion, have Data Saver on or are on a slow (2G or 3G)
+ * connection. Skip intro, a click, a tap or the Escape key ends it at once. It has no sound.
+ * The timing is in intro-sequence.tsx.
  */
 export const INTRO = {
-  video: {
-    src: "/videos/twt-logo-reveal.mp4",
-    /** The video's first frame, shown while it loads. */
-    poster: "/videos/twt-logo-reveal-poster.jpg",
-  },
-  /**
-   * The video's flat edge colour as a browser shows it (the file is BT.709, so this is a little
-   * lighter than a raw pixel read), so its square blends into the screen. Its edges are also faded.
-   */
-  background: "#fcf3e6",
-  /** Seconds into the video at which it starts to dissolve. The light sweep ends near 3.5. */
-  fadeAt: 4.2,
-  /** Length of the dissolve, in milliseconds. */
-  fadeMs: 800,
-  /** If the video has not started by then (slow connection, autoplay blocked), skip the intro. */
-  startTimeoutMs: 3000,
-  /** The longest the intro may ever stay up, whatever happens. */
-  maxMs: 8000,
   label: "The Wed Theory Events intro",
   skipLabel: "Skip intro",
+  /** The line under the arch. */
+  tagline: "Event Planning & Design · Lahore",
+  /** The dark room the sequence starts in. */
+  background: "#14120e",
+  /** The longest the intro may ever stay up, whatever happens, in milliseconds. */
+  maxMs: 6500,
 } as const;
 
 /**
