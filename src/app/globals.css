@@ -67,6 +67,7 @@
   --animate-rise: rise 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-fade: fade 1200ms ease-out both;
   --animate-settle: settle 1800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pop: pop 800ms cubic-bezier(0.22, 1, 0.36, 1) 900ms both;
 
   @keyframes rise {
     from {
@@ -85,6 +86,18 @@
     }
     to {
       opacity: 1;
+    }
+  }
+
+  /* The floating button arriving: it grows from small and lifts into place. */
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.6);
+    }
+    to {
+      opacity: 1;
+      transform: none;
     }
   }
 
@@ -188,6 +201,13 @@ html[data-intro="play"] #intro-splash {
 /* While the intro plays the hero waits behind it, then rises in as the intro dissolves. */
 html[data-intro="play"] .hero-reveal {
   opacity: 0;
+  animation: intro-failsafe-in 0.01s linear 9s forwards;
+}
+
+/* The floating Instagram button waits too, then pops in after the intro. */
+html[data-intro="play"] .float-btn {
+  opacity: 0;
+  pointer-events: none;
   animation: intro-failsafe-in 0.01s linear 9s forwards;
 }
 

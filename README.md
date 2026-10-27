@@ -49,6 +49,11 @@ npm run check      # lint + typecheck + production build
   `sitemap.xml`, web app manifest, favicon and app icons, a "ProfessionalService" structured-data
   block on the front page for search engines, and a designed 404 page.
 
+- **Floating Instagram button:** a round button at the bottom right of every page that opens the
+  studio's Instagram profile in a new tab (the Instagram app, on a phone that has it). It pops in after
+  the opening animation, grows a "Follow us" label for a mouse or the keyboard, keeps clear of phone
+  notches, sits under the phone menu and does not print.
+
 - **Opening animation:** the logo reveal video (`public/videos/twt-logo-reveal.mp4`) plays full
   screen the first time someone opens the home page in a browser session, then dissolves into the
   hero while the headline rises in. It starts dissolving at 4.2 seconds, ends early on Skip, a tap or
@@ -81,6 +86,7 @@ to phones held sideways, and the inner pages share a footer; the front page has 
 | The services overview and the four service pages: all words, photos, gallery items, calls to action | `src/components/sites/twt/services-content.ts` |
 | Service page layout and sections | `service-page.tsx`, `service-sections.tsx`; routes in `src/app/(pages)/services/` |
 | Scroll-reveal animation | `src/components/ui/reveal.tsx`, styles under "Scroll reveal" in `globals.css` |
+| The floating Instagram button (words and link: `SOCIAL.instagram` in `content.ts`) | `src/components/sites/twt/instagram-button.tsx` |
 | Footer, page intro, closing call to action | `site-footer.tsx`, `page-intro.tsx`, `closing-cta.tsx` |
 | Quiz questions, answers, scoring weights, the four results (copy, palettes, photos) | `src/components/sites/twt/theory-content.ts` |
 | Quiz logic (scoring, address and message building, form pre-fill) | `src/components/sites/twt/theory.ts` |

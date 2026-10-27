@@ -12,7 +12,7 @@ export function ServicesStrip() {
     <section
       id={SERVICES.id}
       aria-labelledby="services-kicker"
-      className="relative bg-[linear-gradient(90deg,#f0ede2_0%,#f0ede2_55%,#eee8dc_100%)] pt-9 pb-10 lg:grid lg:grid-cols-[30.5fr_45.9fr_23.6fr] lg:pt-[33px] lg:pb-[38px]"
+      className="relative overflow-x-clip bg-[linear-gradient(90deg,#f0ede2_0%,#f0ede2_55%,#eee8dc_100%)] pt-9 pb-10 lg:grid lg:grid-cols-[30.5fr_45.9fr_23.6fr] lg:pt-[33px] lg:pb-[38px]"
     >
       {/* Intro */}
       <div className="px-5 sm:px-8 lg:relative lg:pr-0 lg:pl-[6.56vw]">

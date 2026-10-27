@@ -147,6 +147,13 @@ export const SOCIAL = {
     label: "Instagram",
     handle: "@thewedtheory",
     href: "https://www.instagram.com/thewedtheory/",
+    /** The floating button that follows visitors down every page. */
+    floating: {
+      /** Shown beside the icon when a mouse hovers or the keyboard focuses it. */
+      label: "Follow us",
+      /** What a screen reader announces. */
+      ariaLabel: "The Wed Theory on Instagram (opens in a new tab)",
+    },
   },
 } as const;
 
