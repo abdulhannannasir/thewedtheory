@@ -1,9 +1,16 @@
 "use client";
 
 import { useCallback, type CSSProperties, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 type RevealProps = {
   as?: "div" | "li";
+  /**
+   * For a block that is already on screen when the page opens. It is never hidden waiting for
+   * JavaScript (which would hold back what a phone shows first, and its largest paint); it rises in
+   * with a plain CSS animation instead.
+   */
+  immediate?: boolean;
   /** Milliseconds to wait before the block rises, to stagger neighbours that arrive together. */
   delay?: number;
   className?: string;
@@ -16,7 +23,13 @@ type RevealProps = {
  * JavaScript and a script that never loads; this component only flips `data-revealed` on at the
  * right moment, straight on the element, so it never causes a re-render.
  */
-export function Reveal({ as: Tag = "div", delay = 0, className, children }: RevealProps) {
+export function Reveal({
+  as: Tag = "div",
+  immediate = false,
+  delay = 0,
+  className,
+  children,
+}: RevealProps) {
   const observe = useCallback((element: HTMLElement | null) => {
     if (!element) return;
     if (!("IntersectionObserver" in window)) {
@@ -35,6 +48,17 @@ export function Reveal({ as: Tag = "div", delay = 0, className, children }: Reve
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
+
+  if (immediate) {
+    return (
+      <Tag
+        style={delay ? { animationDelay: `${delay}ms` } : undefined}
+        className={cn("motion-safe:animate-rise", className)}
+      >
+        {children}
+      </Tag>
+    );
+  }
 
   return (
     <Tag

@@ -139,7 +139,8 @@ export function ServiceCards({ exclude }: { exclude?: ServiceSlug }) {
       {slugs.map((slug, index) => {
         const page = SERVICE_PAGES[slug];
         return (
-          <Reveal as="li" key={slug} delay={index * 120}>
+          // The first card is on screen when the page opens, so it rises in with CSS, not with the scroll-reveal.
+          <Reveal as="li" key={slug} delay={index * 120} immediate={!compact && index === 0}>
             <Link
               href={serviceHref(slug)}
               className="group flex h-full flex-col outline-none focus-visible:ring-2 focus-visible:ring-forest focus-visible:ring-offset-2 focus-visible:ring-offset-ivory"
@@ -154,6 +155,8 @@ export function ServiceCards({ exclude }: { exclude?: ServiceSlug }) {
                   src={page.hero.src}
                   alt={page.hero.alt}
                   fill
+                  // On the services page the first card is what a phone shows first: load it first.
+                  preload={!compact && index === 0}
                   sizes={
                     compact
                       ? "(min-width: 640px) 30vw, 100vw"

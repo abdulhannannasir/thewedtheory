@@ -60,9 +60,9 @@ export function ServicesStrip() {
                 className="size-7 shrink-0 text-ink transition-transform duration-500 ease-out motion-safe:group-hover:-translate-y-0.5"
               />
               <div className="sm:contents">
-                <h3 className="text-[15px] leading-none font-medium text-ink transition-colors duration-300 group-hover:text-ink-soft sm:mt-2 sm:text-[14px]">
+                <h2 className="text-[15px] leading-none font-medium text-ink transition-colors duration-300 group-hover:text-ink-soft sm:mt-2 sm:text-[14px]">
                   {item.title}
-                </h3>
+                </h2>
                 <p className="mt-2 text-[12px] leading-[14px] text-ink-soft sm:mt-1.5 sm:text-[11px] sm:leading-[13.5px]">
                   {item.blurb.map((line) => (
                     <span key={line} className="block">

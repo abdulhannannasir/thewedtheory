@@ -143,6 +143,8 @@
     @apply bg-background text-foreground;
     font-weight: 500;
     text-rendering: optimizeLegibility;
+    /* The flash a phone shows on a tap: a soft forest tint instead of the default grey. */
+    -webkit-tap-highlight-color: rgb(47 59 43 / 0.12);
   }
   @media (prefers-reduced-motion: reduce) {
     html {

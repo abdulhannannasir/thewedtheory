@@ -9,8 +9,12 @@ import { THEMES, THEORY_PAGE, type ThemeId } from "./theory-content";
 
 const { actions } = THEORY_PAGE.result;
 
-const quietButton =
-  "tap-target inline-flex items-center gap-2 border-b border-cream/50 pb-[3px] text-[15px] leading-none text-cream/85 transition-colors duration-300 outline-none hover:border-cream hover:text-cream focus-visible:border-cream focus-visible:text-cream";
+// Each is a full 44px box (so wrapped rows do not crowd each other for a thumb), with the underline
+// on the text inside.
+const quietBox =
+  "group inline-flex min-h-11 items-center text-[15px] leading-none text-cream/85 transition-colors duration-300 outline-none hover:text-cream focus-visible:text-cream";
+const quietText =
+  "inline-flex items-center gap-2 border-b border-cream/50 pb-[3px] transition-colors duration-300 group-hover:border-cream group-focus-visible:border-cream";
 
 /**
  * The buttons at the end of a result: plan it on WhatsApp or the enquiry form (both carry the answers
@@ -69,25 +73,29 @@ export function TheoryActions({ themeId, shareUrl }: { themeId: ThemeId; shareUr
             aria-hidden="true"
           />
         </SiteLink>
-        <SiteLink href={contactLink(themeId, answers)} className={`${quietButton} mt-3`}>
-          {actions.form}
+        <SiteLink href={contactLink(themeId, answers)} className={quietBox}>
+          <span className={quietText}>{actions.form}</span>
         </SiteLink>
 
-        <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-1 border-t border-cream/20 pt-8">
-          <button type="button" onClick={share} className={quietButton}>
-            <Share2 className="size-3.5" strokeWidth={1.3} aria-hidden="true" />
-            {actions.share}
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 border-t border-cream/20 pt-6">
+          <button type="button" onClick={share} className={quietBox}>
+            <span className={quietText}>
+              <Share2 className="size-3.5" strokeWidth={1.3} aria-hidden="true" />
+              {actions.share}
+            </span>
           </button>
-          <SiteLink href={shareOnWhatsapp} className={quietButton}>
-            {actions.shareWhatsapp}
+          <SiteLink href={shareOnWhatsapp} className={quietBox}>
+            <span className={quietText}>{actions.shareWhatsapp}</span>
           </SiteLink>
-          <button type="button" onClick={copy} className={quietButton}>
-            {status === actions.copied ? (
-              <Check className="size-3.5" strokeWidth={1.5} aria-hidden="true" />
-            ) : (
-              <Link2 className="size-3.5" strokeWidth={1.3} aria-hidden="true" />
-            )}
-            {actions.copy}
+          <button type="button" onClick={copy} className={quietBox}>
+            <span className={quietText}>
+              {status === actions.copied ? (
+                <Check className="size-3.5" strokeWidth={1.5} aria-hidden="true" />
+              ) : (
+                <Link2 className="size-3.5" strokeWidth={1.3} aria-hidden="true" />
+              )}
+              {actions.copy}
+            </span>
           </button>
         </div>
         <p role="status" aria-live="polite" className="mt-3 min-h-5 text-[14px] text-cream/80">

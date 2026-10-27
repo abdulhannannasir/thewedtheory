@@ -35,9 +35,11 @@ function buildMessage(values: Values): string {
   return [form.messageGreeting, "", ...lines].join("\n");
 }
 
-const label = "text-[10px] leading-none font-medium tracking-[0.22em] text-ink-soft uppercase";
+// tap-target widens the label's touch area to 44px; a tap on a label just focuses its field.
+const label =
+  "tap-target text-[10px] leading-none font-medium tracking-[0.22em] text-ink-soft uppercase";
 const control =
-  "block w-full border-0 border-b border-ink/30 bg-transparent px-0 text-[17px] text-ink outline-none transition-colors duration-300 placeholder:text-ink-soft/60 focus:border-ink aria-invalid:border-clay";
+  "block w-full border-0 border-b border-ink/30 bg-transparent px-0 text-[17px] text-ink outline-none transition-colors duration-300 placeholder:text-ink-soft focus:border-ink aria-invalid:border-clay";
 
 type FieldProps = {
   name: FieldName;
@@ -157,7 +159,7 @@ export function ContactForm() {
               <select
                 {...props}
                 defaultValue={eventType}
-                className={cn(control, "h-11 appearance-none pr-7 invalid:text-ink-soft/60")}
+                className={cn(control, "h-11 appearance-none pr-7 invalid:text-ink-soft")}
               >
                 <option value="" disabled>
                   {f.eventType.placeholder}
