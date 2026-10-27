@@ -27,7 +27,7 @@ export function ServicesStrip() {
         </p>
         <SiteLink
           href={SERVICES.link.href}
-          className="group mt-5 inline-flex items-center gap-2 text-[9.5px] leading-none font-medium tracking-[0.2em] text-ink-soft uppercase outline-none focus-visible:text-ink"
+          className="tap-target group mt-5 inline-flex items-center gap-2 text-[9.5px] leading-none font-medium tracking-[0.2em] text-ink-soft uppercase outline-none focus-visible:text-ink"
         >
           <span className="border-b border-ink-soft/70 pb-[3px] transition-colors group-hover:border-ink group-hover:text-ink">
             {SERVICES.link.label}

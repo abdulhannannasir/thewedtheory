@@ -370,3 +370,36 @@ export const CONTACT = {
     },
   },
 } as const;
+
+/**
+ * THE OPENING ANIMATION
+ * The logo reveal plays once, full screen, the first time a visitor opens the home page in a
+ * browser session, then dissolves into the hero. It is skipped for visitors who prefer reduced
+ * motion, and a Skip button, a click, a tap or the Escape key ends it early.
+ *
+ * VIDEO RULES: square, with a FLAT background of exactly `background` so the edges disappear into
+ * the page, and the logo centred. Keep it small (this one is about 430 KB): it is fetched on the
+ * first visit. To swap it, replace the files under /public/videos and update the paths and times.
+ */
+export const INTRO = {
+  video: {
+    src: "/videos/twt-logo-reveal.mp4",
+    /** The video's first frame, shown while it loads. */
+    poster: "/videos/twt-logo-reveal-poster.jpg",
+  },
+  /**
+   * The video's flat edge colour as a browser shows it (the file is BT.709, so this is a little
+   * lighter than a raw pixel read), so its square blends into the screen. Its edges are also faded.
+   */
+  background: "#fcf3e6",
+  /** Seconds into the video at which it starts to dissolve. The light sweep ends near 3.5. */
+  fadeAt: 4.2,
+  /** Length of the dissolve, in milliseconds. */
+  fadeMs: 800,
+  /** If the video has not started by then (slow connection, autoplay blocked), skip the intro. */
+  startTimeoutMs: 3000,
+  /** The longest the intro may ever stay up, whatever happens. */
+  maxMs: 8000,
+  label: "The Wed Theory Events intro",
+  skipLabel: "Skip intro",
+} as const;

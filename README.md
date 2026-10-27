@@ -25,8 +25,16 @@ npm run check      # lint + typecheck + production build
   There is no server behind the site, so the form checks the answers and opens WhatsApp with them
   written out as a message. Nothing is stored.
 
+- **Opening animation:** the logo reveal video (`public/videos/twt-logo-reveal.mp4`) plays full
+  screen the first time someone opens the home page in a browser session, then dissolves into the
+  hero while the headline rises in. It starts dissolving at 4.2 seconds, ends early on Skip, a tap or
+  click, or Escape, and is skipped for visitors who prefer reduced motion, on reloads and on inner
+  pages. If the video cannot play (autoplay blocked, slow or failed load) it steps aside rather than
+  make anyone wait.
+
 All pages are responsive: the nav collapses below 1024px into a full-screen menu, and grids and the
-services strip stack. The inner pages share a footer; the front page has none.
+services strip stack. Everything you tap is at least 44px tall, the hero adapts to small phones and
+to phones held sideways, and the inner pages share a footer; the front page has none.
 
 ## Where things live
 
@@ -34,6 +42,8 @@ services strip stack. The inner pages share a footer; the front page has none.
 | --- | --- |
 | Any text, link, photo path or the WhatsApp number | `src/components/sites/twt/content.ts` |
 | Colours, fonts, animation | `src/app/globals.css`, `src/app/layout.tsx` |
+| Opening animation: video, timing, colours, skip label | `INTRO` in `content.ts` (video files in `public/videos/`) |
+| Opening animation: logic and the pre-paint check | `intro-splash.tsx`, `intro.ts`; styles at the end of `globals.css` |
 | Header and mobile menu | `src/components/sites/twt/site-header.tsx` |
 | Hero layout, photo and overlays | `src/components/sites/twt/hero.tsx` |
 | Services strip | `src/components/sites/twt/services-strip.tsx` |
@@ -45,6 +55,12 @@ services strip stack. The inner pages share a footer; the front page has none.
 | Inner-page routes | `src/app/(pages)/` (the group adds the footer; it is not part of the URL) |
 
 ## To do
+
+- To use a different opening video, replace the files in `public/videos/` and update `INTRO` in
+  `content.ts`. It should be square with a flat background of one colour (set that colour in
+  `INTRO.background`, as a browser shows it) and the logo centred, and small: it is downloaded on the
+  first visit. Set `INTRO.fadeAt` to the second where the motion ends. No clip for a hero background
+  video has been added; the hero is still a photo.
 
 - The hero photo is a stand-in from the existing photo set. To use the final one, replace
   `public/images/custom-table.jpg` (16:9, 2400 x 1350 px or larger) and `custom-table-mobile.jpg`

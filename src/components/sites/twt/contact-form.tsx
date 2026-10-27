@@ -237,7 +237,7 @@ export function ContactForm() {
               href={sentUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 inline-block border-b border-ink-soft/70 pb-[3px] text-[10px] leading-none font-medium tracking-[0.2em] text-ink-soft uppercase transition-colors outline-none hover:border-ink hover:text-ink focus-visible:text-ink"
+              className="tap-target mt-4 inline-block border-b border-ink-soft/70 pb-[3px] text-[10px] leading-none font-medium tracking-[0.2em] text-ink-soft uppercase transition-colors outline-none hover:border-ink hover:text-ink focus-visible:text-ink"
             >
               {form.sent.linkLabel}
             </a>

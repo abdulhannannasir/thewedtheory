@@ -4,7 +4,7 @@ import { SiteLink } from "./site-link";
 
 const kicker = "text-[10px] leading-none font-medium tracking-[0.22em] text-ink-soft uppercase";
 const value =
-  "text-[clamp(1.25rem,1.8vw,1.625rem)] leading-[1.15] text-ink transition-colors duration-300 outline-none hover:text-ink-soft focus-visible:underline focus-visible:underline-offset-4";
+  "tap-target text-[clamp(1.25rem,1.8vw,1.625rem)] leading-[1.15] text-ink transition-colors duration-300 outline-none hover:text-ink-soft focus-visible:underline focus-visible:underline-offset-4";
 
 /**
  * The body of the contact page: the ways to reach the studio on the left, the enquiry form on the

@@ -19,7 +19,7 @@ export function ClosingCta() {
         <p className="mt-5 max-w-[30rem] text-[17px] leading-[1.4] text-cream/85">{CLOSING.body}</p>
         <SiteLink
           href={CLOSING.button.href}
-          className="group mt-9 inline-flex h-[42px] items-center gap-2.5 bg-cream px-[30px] text-[15px] leading-none tracking-[0.02em] text-ink transition-colors duration-300 outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-forest"
+          className="group mt-9 inline-flex h-11 items-center gap-2.5 bg-cream px-[30px] text-[15px] leading-none tracking-[0.02em] text-ink transition-colors duration-300 outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-forest"
         >
           {CLOSING.button.label}
           <ArrowRight

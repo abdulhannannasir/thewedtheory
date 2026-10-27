@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Mrs_Saint_Delafield } from "next/font/google";
 import { BRAND } from "@/components/sites/twt/content";
+import { INTRO_GUARD_SCRIPT } from "@/components/sites/twt/intro";
+import { IntroSplash } from "@/components/sites/twt/intro-splash";
 import { SiteHeader } from "@/components/sites/twt/site-header";
 import "./globals.css";
 
@@ -40,9 +42,15 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
+      // The inline script below sets data-intro on <html> before React hydrates.
+      suppressHydrationWarning
       className={`${cormorant.variable} ${script.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: INTRO_GUARD_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col">
+        <IntroSplash />
         <SiteHeader />
         {children}
       </body>
