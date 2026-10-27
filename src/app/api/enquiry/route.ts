@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ENQUIRY } from "@/config/business";
-import { cleanValues, toDeliveryPayload, validate } from "@/lib/enquiry";
+import { cleanValues, deliveryAccepted, toDeliveryPayload, validate } from "@/lib/enquiry";
 
 /**
  * Receives an enquiry from the form and delivers it to the studio.
@@ -10,7 +10,8 @@ import { cleanValues, toDeliveryPayload, validate } from "@/lib/enquiry";
  * Zapier, n8n, a Google Apps Script, your own CRM. The URL is never sent to the browser. If
  * ENQUIRY_WEBHOOK_TOKEN is also set it is sent as a Bearer token. See README, "Receiving enquiries".
  *
- * HONESTY. It answers 200 only after the destination has accepted the enquiry. With no destination
+ * HONESTY. It answers 200 only after the destination has accepted the enquiry (a 2xx that comes with a
+ * web page or `{"ok": false}` is not acceptance: see deliveryAccepted). With no destination
  * configured it answers 503 `not_configured`, and the form then offers the visitor a ready-made
  * WhatsApp message instead of pretending anything was sent.
  *
@@ -99,9 +100,15 @@ export async function POST(request: Request) {
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(DELIVERY_TIMEOUT_MS),
     });
-    if (!response.ok) {
+    const answer = (await response.text()).slice(0, 2_000);
+    const accepted = deliveryAccepted({
+      ok: response.ok,
+      contentType: response.headers.get("content-type"),
+      body: answer,
+    });
+    if (!accepted) {
       // The status only: never log what the visitor wrote.
-      console.error(`Enquiry destination answered ${response.status}.`);
+      console.error(`Enquiry destination did not confirm (status ${response.status}).`);
       return fail("delivery_failed", 502);
     }
     return NextResponse.json({ ok: true });

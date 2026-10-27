@@ -119,6 +119,19 @@ unless the destination accepted it.
    `whatsappChat` (a `wa.me` link to the visitor), `text` (all answers as plain text for an email body),
    `source`, `pageUrl` and `receivedAt`.
 
+**Google Sheet + email alert (no other service needed).** `docs/enquiry-apps-script.gs` is a ready-made
+Google Apps Script: it saves every enquiry as a row in a Sheet and emails you. Create a Sheet, open
+Extensions, Apps Script, paste the file in, set `SECRET` to a long random string, run `setup` once and
+allow the permissions, then Deploy, New deployment, Web app (execute as you, access: Anyone). Copy the
+`/exec` URL and set `ENQUIRY_WEBHOOK_URL` to that URL followed by `?key=` and your `SECRET` (Apps Script
+cannot read an Authorization header, so the key travels in the URL, which only the server ever sees).
+Cells are written as plain text, so nothing a visitor types can run as a formula.
+
+The route counts a destination as having accepted an enquiry only if it answered 2xx **and** did not
+answer with a web page or `{"ok": false}`. That matters for Apps Script: if the web app is not shared with
+"Anyone", or the script fails, Google still answers 200 with a page, and the form then correctly reports
+that nothing was sent.
+
 For local development put the two variables in `.env.local` (it is git-ignored). Spam: a hidden field
 catches bots and an address that sends many enquiries in ten minutes is slowed down (per server instance:
 a speed bump, not a wall; add a service-side filter such as Formspree's if you need more).

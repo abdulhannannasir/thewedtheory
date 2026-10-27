@@ -165,3 +165,30 @@ export function toDeliveryPayload(values: EnquiryValues, meta: { pageUrl: string
     text: summaryLines(values).join("\n"),
   };
 }
+
+/**
+ * Did the destination really take the enquiry? A 2xx status alone is not proof: a Google Apps Script web
+ * app that is not shared with "Anyone" (or that fails) answers 200 with a web page, and a script can answer
+ * `{"ok": false}`. Both count as not delivered. JSON, plain text ("Accepted") and an empty body count as taken.
+ */
+export function deliveryAccepted(response: {
+  ok: boolean;
+  contentType: string | null;
+  body: string;
+}): boolean {
+  if (!response.ok) return false;
+  const looksLikeAPage =
+    (response.contentType ?? "").toLowerCase().includes("text/html") ||
+    /^\s*<(!doctype html|html)/i.test(response.body);
+  if (looksLikeAPage) return false;
+  try {
+    const parsed: unknown = JSON.parse(response.body);
+    if (parsed && typeof parsed === "object") {
+      const { ok, success } = parsed as { ok?: unknown; success?: unknown };
+      if (ok === false || success === false) return false;
+    }
+  } catch {
+    // Not JSON: plain text such as "Accepted" is fine.
+  }
+  return true;
+}
