@@ -12,6 +12,7 @@
   --color-ink-soft: var(--ink-soft);
   --color-forest: var(--forest);
   --color-line: var(--line);
+  --color-clay: var(--clay);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -74,6 +75,7 @@
   --ink-soft: #6b675b;
   --forest: #2f3b2b;
   --line: #ddd8cc;
+  --clay: #8f3b2c;
 
   --background: var(--ivory);
   --foreground: var(--ink);

@@ -121,9 +121,13 @@ export function SiteHeader() {
         <div className="col-start-3 flex items-start justify-end gap-x-[30px] lg:mt-4">
           <SiteLink
             href={NAV.contact.href}
+            aria-current={pathname === NAV.contact.href ? "page" : undefined}
             className={cn(
               navLink,
-              "hidden border-transparent pt-[11px] hover:border-ink/40 lg:block",
+              "hidden pt-[11px] lg:block",
+              pathname === NAV.contact.href
+                ? "border-ink/60"
+                : "border-transparent hover:border-ink/40",
             )}
           >
             {NAV.contact.label}
