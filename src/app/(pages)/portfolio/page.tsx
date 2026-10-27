@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ClosingCta } from "@/components/sites/twt/closing-cta";
 import { PORTFOLIO } from "@/components/sites/twt/content";
 import { PageIntro } from "@/components/sites/twt/page-intro";
+import { PortfolioDetails } from "@/components/sites/twt/portfolio-details";
 import { PortfolioGrid } from "@/components/sites/twt/portfolio-grid";
 
 export const metadata: Metadata = {
@@ -19,6 +20,7 @@ export default function PortfolioPage() {
         intro={PORTFOLIO.intro}
       />
       <PortfolioGrid />
+      <PortfolioDetails />
       <ClosingCta />
     </>
   );

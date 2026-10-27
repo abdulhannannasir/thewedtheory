@@ -17,7 +17,9 @@ npm run check      # lint + typecheck + production build
   Event" button) over a services strip (intro, Weddings / Social Events / Corporate Events,
   handwritten sign-off). One screen, no footer.
 - **Portfolio** (`/portfolio`): intro, five photo tiles (grand entrances, bespoke stages, floral
-  architecture, table settings, lighting) and a closing call to action.
+  architecture, table settings, lighting), a "Close up" masonry gallery of ten details cut from those
+  photos, and a closing call to action. The gallery's tiles glide in with GSAP as they scroll into
+  view; hovering with a mouse shows each tile's caption, and touch screens always show it.
 - **About** (`/about`): intro with an arched photo, our approach, how we work (four steps), what we
   plan, and the closing call to action.
 
@@ -49,6 +51,8 @@ to phones held sideways, and the inner pages share a footer; the front page has 
 | Services strip | `src/components/sites/twt/services-strip.tsx` |
 | Service icons | `src/components/sites/twt/icons.tsx` |
 | Portfolio tiles | `portfolio-grid.tsx` (copy and photos: `PORTFOLIO` in `content.ts`) |
+| Portfolio detail gallery | `portfolio-details.tsx` (pictures, captions, order: `PORTFOLIO_DETAILS` in `content.ts`; files in `public/images/details/`) |
+| The masonry component itself (layout, GSAP motion, props) | `src/components/ui/masonry-gallery.tsx` |
 | About sections | `about-sections.tsx` (copy: `ABOUT` in `content.ts`) |
 | Contact page and enquiry form | `contact-section.tsx`, `contact-form.tsx` (copy, labels, options: `CONTACT` in `content.ts`) |
 | Footer, page intro, closing call to action | `site-footer.tsx`, `page-intro.tsx`, `closing-cta.tsx` |
@@ -66,8 +70,10 @@ to phones held sideways, and the inner pages share a footer; the front page has 
   `public/images/custom-table.jpg` (16:9, 2400 x 1350 px or larger) and `custom-table-mobile.jpg`
   (about 9:16, 1152 x 2064 px or larger), or point `HERO.photo` at new files. Keep the left of the
   photo calm and dark: the headline sits there.
-- The portfolio photos are the concept images from the earlier site. Swap in real event photography
-  when you have it (`PORTFOLIO.items` in `content.ts`).
+- The portfolio photos, and the close-ups in the "Close up" gallery that are cut from them, are the
+  concept images from the earlier site. Swap in real event photography when you have it
+  (`PORTFOLIO.items` and `PORTFOLIO_DETAILS.items` in `content.ts`). For the gallery, each
+  item's `height` must match its picture's shape (400 is a square; see `MasonryItem`).
 - The About copy describes the approach in general terms. Add the founder, a photo and real numbers
   (years, events) when you have them.
 - "Enquire" and "Plan Your Event" open WhatsApp directly; "Contact" opens the contact page. Change

@@ -4,6 +4,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* A device with a real mouse: hover effects belong here, and captions that hide on hover must not hide on touch. */
+@custom-variant can-hover (@media (hover: hover) and (pointer: fine));
+
 /* A phone held sideways: wide enough for the desktop layout, but very short. */
 @custom-variant short (@media (max-height: 520px) and (orientation: landscape));
 

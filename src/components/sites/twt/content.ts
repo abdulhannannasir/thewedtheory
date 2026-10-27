@@ -12,6 +12,8 @@
  *   at least 1152 x 2064 px. Drop files in /public/images and update the paths here.
  */
 
+import type { MasonryItem } from "@/components/ui/masonry-gallery";
+
 export type Link = { label: string; href: string };
 
 export const BRAND = {
@@ -403,3 +405,108 @@ export const INTRO = {
   label: "The Wed Theory Events intro",
   skipLabel: "Skip intro",
 } as const;
+
+/**
+ * THE DETAIL GALLERY (portfolio page, under the five collections)
+ * A masonry of close-ups cut from the collection photos. Each tile's `kicker` names the collection
+ * it belongs to. `height` is the tile's height relative to its width on a scale where 400 is a
+ * square (see MasonryItem), so it must match the picture's shape. Items fill the shortest column in
+ * this order, which was chosen to keep the columns even from 2 to 5 wide: if you add or reorder
+ * pictures, check the bottom edge on a wide screen and a phone.
+ *
+ * To use real photography, drop the files in /public/images/details and update `img`, `height`,
+ * `alt` and `title` here.
+ */
+export const PORTFOLIO_DETAILS = {
+  kicker: "In detail",
+  title: "Close up",
+  intro:
+    "The textures, light and florals that make a setting feel considered, seen a little closer.",
+  items: [
+    {
+      id: "candelabra",
+      img: "/images/details/candelabra.jpg",
+      height: 560,
+      kicker: "Lighting & Ambience",
+      title: "Candelabra glow",
+      alt: "A tall brass candelabra with lit tapers beside a long candlelit table",
+    },
+    {
+      id: "place-setting",
+      img: "/images/details/place-setting.jpg",
+      height: 245,
+      kicker: "Custom Table Settings",
+      title: "Gilded place setting",
+      alt: "A gold-rimmed plate with a folded napkin, a sprig of greenery and gold cutlery on ivory linen",
+    },
+    {
+      id: "sheer-drapery",
+      img: "/images/details/sheer-drapery.jpg",
+      height: 455,
+      kicker: "Silk & drape",
+      title: "Sheer drapery",
+      alt: "Soft folds of sheer ivory silk falling in warm light",
+    },
+    {
+      id: "floral-cascade",
+      img: "/images/details/floral-cascade.jpg",
+      height: 320,
+      kicker: "Floral Architecture",
+      title: "Floral cascade",
+      alt: "A hanging cloud of white roses, baby’s breath and sage foliage with trailing blooms",
+    },
+    {
+      id: "taper-and-roses",
+      img: "/images/details/taper-and-roses.jpg",
+      height: 390,
+      kicker: "Custom Table Settings",
+      title: "Tapers & garden roses",
+      alt: "A tall taper candle in glass beside a centrepiece of garden roses and baby’s breath",
+    },
+    {
+      id: "chandelier",
+      img: "/images/details/chandelier.jpg",
+      height: 480,
+      kicker: "Lighting & Ambience",
+      title: "Crystal chandelier",
+      alt: "A crystal chandelier with lit candles beneath a canopy of fairy lights",
+    },
+    {
+      id: "floral-arch",
+      img: "/images/details/floral-arch.jpg",
+      height: 535,
+      kicker: "Bespoke Stage & Backdrop",
+      title: "The floral arch",
+      alt: "The side of a tall arch covered in white roses and greenery against ivory drapes",
+    },
+    {
+      id: "arch-garland",
+      img: "/images/details/arch-garland.jpg",
+      height: 445,
+      kicker: "Grand Entrances",
+      title: "Garland & silk",
+      alt: "A garland of white roses over an archway with silk drapes and a glow of fairy lights beyond",
+    },
+    {
+      id: "aisle-blooms",
+      img: "/images/details/aisle-blooms.jpg",
+      height: 370,
+      kicker: "Grand Entrances",
+      title: "Aisle blooms",
+      alt: "White roses and baby’s breath beside a lit taper in a tall glass along a wooden aisle",
+    },
+    {
+      id: "candlelit-base",
+      img: "/images/details/candlelit-base.jpg",
+      height: 195,
+      kicker: "Bespoke Stage & Backdrop",
+      title: "Candlelit base",
+      alt: "Pillar candles in glass among low white florals at the foot of a stage",
+    },
+  ],
+} as const satisfies {
+  kicker: string;
+  title: string;
+  intro: string;
+  items: readonly MasonryItem[];
+};
