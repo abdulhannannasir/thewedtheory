@@ -14,7 +14,7 @@ const navLink =
   "border-b pb-2 text-[15px] leading-none tracking-[0.02em] text-ink transition-colors duration-300 outline-none focus-visible:border-ink";
 
 const pill =
-  "inline-flex h-[38px] items-center gap-2.5 rounded-full bg-forest px-[25px] text-[15px] leading-none tracking-[0.02em] text-cream transition-colors duration-300 outline-none hover:bg-[#3b4936] focus-visible:ring-2 focus-visible:ring-forest/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream";
+  "tap-target inline-flex h-[38px] items-center gap-2.5 rounded-full bg-forest px-[25px] text-[15px] leading-none tracking-[0.02em] text-cream transition-colors duration-300 outline-none hover:bg-[#3b4936] focus-visible:ring-2 focus-visible:ring-forest/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream";
 
 /**
  * Sits over the top of the hero: navigation on the left, the logo in the middle, Contact and the
@@ -50,7 +50,7 @@ export function SiteHeader() {
           <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}>
             <Dialog.Trigger
               aria-label={NAV.menuOpen}
-              className="-ml-2 inline-flex size-10 items-center justify-center text-ink outline-none focus-visible:ring-2 focus-visible:ring-forest/50 lg:hidden"
+              className="-ml-2.5 inline-flex size-11 items-center justify-center text-ink outline-none focus-visible:ring-2 focus-visible:ring-forest/50 lg:hidden"
             >
               <Menu className="size-6" strokeWidth={1.2} aria-hidden="true" />
             </Dialog.Trigger>
@@ -68,7 +68,7 @@ export function SiteHeader() {
                   />
                   <Dialog.Close
                     aria-label={NAV.menuClose}
-                    className="-mr-2 inline-flex size-10 items-center justify-center justify-self-end outline-none focus-visible:ring-2 focus-visible:ring-forest/50"
+                    className="-mr-2.5 inline-flex size-11 items-center justify-center justify-self-end outline-none focus-visible:ring-2 focus-visible:ring-forest/50"
                   >
                     <X className="size-6" strokeWidth={1.2} aria-hidden="true" />
                   </Dialog.Close>

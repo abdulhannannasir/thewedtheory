@@ -17,7 +17,9 @@ npm run check      # lint + typecheck + production build
   Event" button) over a services strip (intro, Weddings / Social Events / Corporate Events,
   handwritten sign-off). One screen, no footer.
 - **Portfolio** (`/portfolio`): intro, five photo tiles (grand entrances, bespoke stages, floral
-  architecture, table settings, lighting) and a closing call to action.
+  architecture, table settings, lighting), a "Close up" masonry gallery of ten details cut from those
+  photos, and a closing call to action. The gallery's tiles glide in with GSAP as they scroll into
+  view; hovering with a mouse shows each tile's caption, and touch screens always show it.
 - **About** (`/about`): intro with an arched photo, our approach, how we work (four steps), what we
   plan, and the closing call to action.
 
@@ -25,8 +27,16 @@ npm run check      # lint + typecheck + production build
   There is no server behind the site, so the form checks the answers and opens WhatsApp with them
   written out as a message. Nothing is stored.
 
+- **Opening animation:** the logo reveal video (`public/videos/twt-logo-reveal.mp4`) plays full
+  screen the first time someone opens the home page in a browser session, then dissolves into the
+  hero while the headline rises in. It starts dissolving at 4.2 seconds, ends early on Skip, a tap or
+  click, or Escape, and is skipped for visitors who prefer reduced motion, on reloads and on inner
+  pages. If the video cannot play (autoplay blocked, slow or failed load) it steps aside rather than
+  make anyone wait.
+
 All pages are responsive: the nav collapses below 1024px into a full-screen menu, and grids and the
-services strip stack. The inner pages share a footer; the front page has none.
+services strip stack. Everything you tap is at least 44px tall, the hero adapts to small phones and
+to phones held sideways, and the inner pages share a footer; the front page has none.
 
 ## Where things live
 
@@ -34,11 +44,15 @@ services strip stack. The inner pages share a footer; the front page has none.
 | --- | --- |
 | Any text, link, photo path or the WhatsApp number | `src/components/sites/twt/content.ts` |
 | Colours, fonts, animation | `src/app/globals.css`, `src/app/layout.tsx` |
+| Opening animation: video, timing, colours, skip label | `INTRO` in `content.ts` (video files in `public/videos/`) |
+| Opening animation: logic and the pre-paint check | `intro-splash.tsx`, `intro.ts`; styles at the end of `globals.css` |
 | Header and mobile menu | `src/components/sites/twt/site-header.tsx` |
 | Hero layout, photo and overlays | `src/components/sites/twt/hero.tsx` |
 | Services strip | `src/components/sites/twt/services-strip.tsx` |
 | Service icons | `src/components/sites/twt/icons.tsx` |
 | Portfolio tiles | `portfolio-grid.tsx` (copy and photos: `PORTFOLIO` in `content.ts`) |
+| Portfolio detail gallery | `portfolio-details.tsx` (pictures, captions, order: `PORTFOLIO_DETAILS` in `content.ts`; files in `public/images/details/`) |
+| The masonry component itself (layout, GSAP motion, props) | `src/components/ui/masonry-gallery.tsx` |
 | About sections | `about-sections.tsx` (copy: `ABOUT` in `content.ts`) |
 | Contact page and enquiry form | `contact-section.tsx`, `contact-form.tsx` (copy, labels, options: `CONTACT` in `content.ts`) |
 | Footer, page intro, closing call to action | `site-footer.tsx`, `page-intro.tsx`, `closing-cta.tsx` |
@@ -46,12 +60,20 @@ services strip stack. The inner pages share a footer; the front page has none.
 
 ## To do
 
+- To use a different opening video, replace the files in `public/videos/` and update `INTRO` in
+  `content.ts`. It should be square with a flat background of one colour (set that colour in
+  `INTRO.background`, as a browser shows it) and the logo centred, and small: it is downloaded on the
+  first visit. Set `INTRO.fadeAt` to the second where the motion ends. No clip for a hero background
+  video has been added; the hero is still a photo.
+
 - The hero photo is a stand-in from the existing photo set. To use the final one, replace
   `public/images/custom-table.jpg` (16:9, 2400 x 1350 px or larger) and `custom-table-mobile.jpg`
   (about 9:16, 1152 x 2064 px or larger), or point `HERO.photo` at new files. Keep the left of the
   photo calm and dark: the headline sits there.
-- The portfolio photos are the concept images from the earlier site. Swap in real event photography
-  when you have it (`PORTFOLIO.items` in `content.ts`).
+- The portfolio photos, and the close-ups in the "Close up" gallery that are cut from them, are the
+  concept images from the earlier site. Swap in real event photography when you have it
+  (`PORTFOLIO.items` and `PORTFOLIO_DETAILS.items` in `content.ts`). For the gallery, each
+  item's `height` must match its picture's shape (400 is a square; see `MasonryItem`).
 - The About copy describes the approach in general terms. Add the founder, a photo and real numbers
   (years, events) when you have them.
 - "Enquire" and "Plan Your Event" open WhatsApp directly; "Contact" opens the contact page. Change

@@ -4,7 +4,7 @@ import { BRAND, FOOTER, NAV, SOCIAL } from "./content";
 import { SiteLink } from "./site-link";
 
 const footerLink =
-  "text-[15px] leading-none text-ink transition-colors duration-300 outline-none hover:text-ink-soft focus-visible:underline focus-visible:underline-offset-4";
+  "block text-[15px] leading-none text-ink max-lg:py-[14.5px] transition-colors duration-300 outline-none hover:text-ink-soft focus-visible:underline focus-visible:underline-offset-4";
 
 /** The closing band of the inner pages. The front page is a single screen and has no footer. */
 export function SiteFooter() {
@@ -31,7 +31,7 @@ export function SiteFooter() {
           <p className="text-[10px] leading-none font-medium tracking-[0.22em] text-ink-soft uppercase">
             {FOOTER.exploreLabel}
           </p>
-          <ul className="mt-5 flex flex-col gap-3.5">
+          <ul className="mt-3 flex flex-col lg:mt-5 lg:gap-3.5">
             {[...NAV.links, NAV.contact].map((link) => (
               <li key={link.href}>
                 <SiteLink href={link.href} className={footerLink}>
@@ -46,7 +46,7 @@ export function SiteFooter() {
           <p className="text-[10px] leading-none font-medium tracking-[0.22em] text-ink-soft uppercase">
             {FOOTER.contactLabel}
           </p>
-          <ul className="mt-5 flex flex-col gap-3.5">
+          <ul className="mt-3 flex flex-col lg:mt-5 lg:gap-3.5">
             <li>
               <SiteLink href={SOCIAL.whatsapp.href} className={footerLink}>
                 {SOCIAL.whatsapp.label}
@@ -58,7 +58,9 @@ export function SiteFooter() {
                 <span className="ml-2 text-ink-soft">{SOCIAL.instagram.handle}</span>
               </SiteLink>
             </li>
-            <li className="text-[15px] leading-none text-ink-soft">{FOOTER.location}</li>
+            <li className="text-[15px] leading-none text-ink-soft max-lg:py-[14.5px]">
+              {FOOTER.location}
+            </li>
           </ul>
         </div>
       </div>

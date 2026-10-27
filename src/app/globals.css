@@ -4,6 +4,26 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* A device with a real mouse: hover effects belong here, and captions that hide on hover must not hide on touch. */
+@custom-variant can-hover (@media (hover: hover) and (pointer: fine));
+
+/* A phone held sideways: wide enough for the desktop layout, but very short. */
+@custom-variant short (@media (max-height: 520px) and (orientation: landscape));
+
+/*
+ * Grows an element's touch area to at least 44px tall (the size fingers need) without changing how
+ * it looks or lays out: an invisible layer covers the extra space. Does nothing to taller elements.
+ */
+@utility tap-target {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block: min(0px, calc((100% - 44px) / 2));
+  }
+}
+
 @theme inline {
   /* Brand palette, sampled from the approved front design. */
   --color-ivory: var(--ivory);
@@ -115,5 +135,58 @@
     html {
       scroll-behavior: auto;
     }
+  }
+}
+
+/*
+ * The opening animation (intro-splash.tsx). The script in intro.ts sets data-intro="play" on <html>
+ * before first paint when the intro should run, and intro-splash.tsx later sets it to "done".
+ * Without the attribute (JavaScript off, intro already seen, reduced motion) none of this applies.
+ */
+#intro-splash {
+  display: none;
+}
+
+html[data-intro="play"] #intro-splash {
+  display: flex;
+  /* If the script that ends the intro never runs, get out of the way anyway after 9 seconds. */
+  animation: intro-failsafe-out 0.01s linear 9s forwards;
+}
+
+/* data-intro leaves "play" the moment the dissolve starts, but the overlay must stay for it. */
+#intro-splash[data-state="leaving"] {
+  display: flex;
+}
+
+/* Fades the video's own square edges out, so no frame shows around it on any browser. */
+.intro-video {
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 4%, #000 96%, transparent),
+    linear-gradient(to bottom, transparent, #000 4%, #000 96%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 4%, #000 96%, transparent),
+    linear-gradient(to bottom, transparent, #000 4%, #000 96%, transparent);
+  mask-composite: intersect;
+}
+
+/* While the intro plays the hero waits behind it, then rises in as the intro dissolves. */
+html[data-intro="play"] .hero-reveal {
+  opacity: 0;
+  animation: intro-failsafe-in 0.01s linear 9s forwards;
+}
+
+@keyframes intro-failsafe-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    /* Out of the way, not just invisible: a see-through layer would still swallow every click. */
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes intro-failsafe-in {
+  to {
+    opacity: 1;
   }
 }

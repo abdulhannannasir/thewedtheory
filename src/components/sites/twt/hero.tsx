@@ -64,34 +64,34 @@ export function Hero() {
   return (
     <section
       aria-labelledby="hero-heading"
-      className="relative isolate flex min-h-[40rem] flex-1 flex-col justify-end overflow-hidden pt-32 pb-12 md:min-h-[36rem] md:justify-center md:pb-24 lg:min-h-[34rem] lg:pt-[8.25rem] lg:pb-[6.25rem]"
+      className="relative isolate flex min-h-[40rem] flex-1 flex-col justify-end overflow-hidden pt-32 pb-12 md:min-h-[36rem] md:justify-center md:pb-24 lg:min-h-[34rem] lg:pt-[8.25rem] lg:pb-[6.25rem] short:min-h-0 short:pt-20 short:pb-8"
     >
       <HeroBackdrop />
 
       <div className="px-5 text-[#fffaf0] [text-shadow:0_1px_18px_rgba(38,26,14,0.35)] sm:px-8 lg:pl-[6.56vw]">
-        <p className="text-[13px] leading-none font-medium tracking-[0.28em] text-[#fff3df] uppercase motion-safe:animate-rise">
+        <p className="text-[13px] leading-none font-medium tracking-[0.28em] text-[#fff3df] uppercase hero-reveal motion-safe:animate-rise">
           {HERO.eyebrow}
         </p>
 
         <h1
           id="hero-heading"
-          className="mt-3.5 text-[clamp(2.25rem,4.3vw,4.5rem)] leading-[1.04] font-normal motion-safe:animate-rise motion-safe:[animation-delay:120ms]"
+          className="mt-3.5 text-[clamp(2.25rem,4.3vw,4.5rem)] max-[359px]:text-[2rem] leading-[1.04] font-normal hero-reveal motion-safe:animate-rise motion-safe:[animation-delay:120ms]"
         >
           <span className="block">{HERO.headline[0]}</span>
           <span className="block text-[1.035em] tracking-[0.015em] italic">{HERO.headline[1]}</span>
         </h1>
 
-        <p className="mt-6 max-w-[34rem] text-[16.6px] leading-[1.32] text-[#fff6e8] motion-safe:animate-rise motion-safe:[animation-delay:240ms]">
+        <p className="mt-6 max-w-[34rem] text-[16.6px] leading-[1.32] text-[#fff6e8] hero-reveal motion-safe:animate-rise motion-safe:[animation-delay:240ms]">
           {HERO.intro.map((line) => (
-            <span key={line} className="block">
-              {line}
+            <span key={line} className="sm:block">
+              {line}{" "}
             </span>
           ))}
         </p>
 
         <SiteLink
           href={HERO.cta.href}
-          className="group mt-[26px] inline-flex h-[37px] items-center gap-2.5 bg-cream px-[26px] text-[15px] leading-none tracking-[0.02em] text-ink [text-shadow:none] transition-colors duration-300 outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-[#2a1d11] motion-safe:animate-rise motion-safe:[animation-delay:360ms]"
+          className="group mt-[26px] inline-flex h-11 items-center gap-2.5 bg-cream px-[26px] md:h-[37px] text-[15px] leading-none tracking-[0.02em] text-ink [text-shadow:none] transition-colors duration-300 outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-[#2a1d11] hero-reveal motion-safe:animate-rise motion-safe:[animation-delay:360ms]"
         >
           {HERO.cta.label}
           <ArrowRight
