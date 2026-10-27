@@ -32,7 +32,7 @@ export function SiteFooter() {
             {FOOTER.exploreLabel}
           </p>
           <ul className="mt-5 flex flex-col gap-3.5">
-            {NAV.links.map((link) => (
+            {[...NAV.links, NAV.contact].map((link) => (
               <li key={link.href}>
                 <SiteLink href={link.href} className={footerLink}>
                   {link.label}

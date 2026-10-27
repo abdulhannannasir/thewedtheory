@@ -21,8 +21,12 @@ npm run check      # lint + typecheck + production build
 - **About** (`/about`): intro with an arched photo, our approach, how we work (four steps), what we
   plan, and the closing call to action.
 
+- **Contact** (`/contact`): the ways to reach us (WhatsApp, Instagram, Lahore) and an enquiry form.
+  There is no server behind the site, so the form checks the answers and opens WhatsApp with them
+  written out as a message. Nothing is stored.
+
 All pages are responsive: the nav collapses below 1024px into a full-screen menu, and grids and the
-services strip stack. The portfolio and about pages share a footer; the front page has none.
+services strip stack. The inner pages share a footer; the front page has none.
 
 ## Where things live
 
@@ -36,6 +40,7 @@ services strip stack. The portfolio and about pages share a footer; the front pa
 | Service icons | `src/components/sites/twt/icons.tsx` |
 | Portfolio tiles | `portfolio-grid.tsx` (copy and photos: `PORTFOLIO` in `content.ts`) |
 | About sections | `about-sections.tsx` (copy: `ABOUT` in `content.ts`) |
+| Contact page and enquiry form | `contact-section.tsx`, `contact-form.tsx` (copy, labels, options: `CONTACT` in `content.ts`) |
 | Footer, page intro, closing call to action | `site-footer.tsx`, `page-intro.tsx`, `closing-cta.tsx` |
 | Inner-page routes | `src/app/(pages)/` (the group adds the footer; it is not part of the URL) |
 
@@ -49,5 +54,8 @@ services strip stack. The portfolio and about pages share a footer; the front pa
   when you have it (`PORTFOLIO.items` in `content.ts`).
 - The About copy describes the approach in general terms. Add the founder, a photo and real numbers
   (years, events) when you have them.
-- "Enquire", "Contact" and "Plan Your Event" open WhatsApp. Change `WHATSAPP` in `content.ts` for a
-  different number, or point those links at a contact page once it exists.
+- "Enquire" and "Plan Your Event" open WhatsApp directly; "Contact" opens the contact page. Change
+  `WHATSAPP` in `content.ts` for a different number.
+- To receive enquiries by email or in a CRM instead of WhatsApp, replace the hand-off in `onSubmit`
+  in `contact-form.tsx` (it needs a small server route or a form service). The copy and fields can
+  stay as they are.

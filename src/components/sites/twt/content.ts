@@ -32,7 +32,7 @@ export const BRAND = {
 const WHATSAPP = "https://wa.me/923137027761";
 
 /** A WhatsApp link that opens with the first line of the message already typed. */
-const whatsapp = (message: string) => `${WHATSAPP}?text=${encodeURIComponent(message)}`;
+export const whatsapp = (message: string) => `${WHATSAPP}?text=${encodeURIComponent(message)}`;
 
 export const NAV = {
   /** The first link whose `href` equals the current path is shown as the current page. */
@@ -42,7 +42,7 @@ export const NAV = {
     { label: "Portfolio", href: "/portfolio" },
     { label: "About", href: "/about" },
   ],
-  contact: { label: "Contact", href: WHATSAPP },
+  contact: { label: "Contact", href: "/contact" },
   enquire: {
     label: "Enquire",
     href: whatsapp("Hello The Wed Theory, I’d like to enquire about planning an event."),
@@ -129,7 +129,7 @@ export const SERVICES = {
  * ---------------------------------------------------------------------------------------------- */
 
 export const SOCIAL = {
-  whatsapp: { label: "WhatsApp", href: WHATSAPP },
+  whatsapp: { label: "WhatsApp", display: "+92 313 7027761", href: WHATSAPP },
   /** https://www.instagram.com/<handle without the @>/ */
   instagram: {
     label: "Instagram",
@@ -296,5 +296,77 @@ export const ABOUT = {
   services: {
     kicker: "What we plan",
     title: "Events of every kind",
+  },
+} as const;
+
+/**
+ * THE CONTACT PAGE
+ * There is no server behind this site, so the enquiry form hands over to WhatsApp: it builds a
+ * message from the visitor's answers and opens a chat with the number above. Nothing is stored.
+ * To receive enquiries another way (an email service, a CRM), replace `onSubmit` in
+ * contact-form.tsx; the copy, labels and options below can stay.
+ */
+export const CONTACT = {
+  eyebrow: "Contact",
+  headline: ["Tell us about", "your celebration."],
+  intro:
+    "Share a few details and we’ll pick up the conversation on WhatsApp. Prefer to message us directly? You can reach us any of the ways below.",
+  details: {
+    kicker: "Reach us",
+    whatsappNote: "Chat with us directly",
+    instagramNote: "See our latest work",
+    locationLabel: "Based in",
+  },
+  form: {
+    id: "enquire",
+    title: "Enquire about your event",
+    intro: "Tell us a little about your day and we’ll pick up the conversation on WhatsApp.",
+    submitLabel: "Send via WhatsApp",
+    /** First line of the WhatsApp message the form prepares for the visitor to send. */
+    messageGreeting: "Hello The Wed Theory, I’d like to enquire about an event.",
+    privacyNote: "Your details open in WhatsApp as a message. Nothing is stored on this website.",
+    requiredNote: "Fields marked * are required.",
+    sent: {
+      title: "Your enquiry is ready",
+      body: "WhatsApp should have opened with your details. If it didn’t, use the link below.",
+      linkLabel: "Open WhatsApp",
+    },
+    /** `summary` is the short label each answer gets in the WhatsApp message. */
+    fields: {
+      name: {
+        label: "Your name",
+        summary: "Name",
+        placeholder: "Full name",
+        error: "Please tell us your name.",
+      },
+      eventType: {
+        label: "Event type",
+        summary: "Event",
+        placeholder: "Choose one",
+        options: ["Wedding", "Social event", "Corporate event", "Something else"],
+        error: "Please choose the kind of event.",
+      },
+      date: {
+        label: "Event date",
+        summary: "Date",
+        placeholder: "Approximate is fine, e.g. December 2026",
+      },
+      guests: {
+        label: "Guests",
+        summary: "Guests",
+        placeholder: "Approximate number",
+        error: "Please enter a whole number, like 150.",
+      },
+      venue: {
+        label: "Venue or city",
+        summary: "Venue",
+        placeholder: "Or “still deciding”",
+      },
+      details: {
+        label: "Anything else we should know?",
+        summary: "Details",
+        placeholder: "Your style, ideas, budget or questions",
+      },
+    },
   },
 } as const;
