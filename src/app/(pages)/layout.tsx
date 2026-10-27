@@ -8,7 +8,9 @@ export default function PagesLayout({
 }>) {
   return (
     <>
-      <main className="flex-1">{children}</main>
+      <main id="main" className="flex-1">
+        {children}
+      </main>
       <SiteFooter />
     </>
   );

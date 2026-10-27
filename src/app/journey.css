@@ -1,0 +1,386 @@
+/*
+ * THE JOURNEY: the front page's scrolling story (cinematic-journey.tsx, journey-controller.tsx).
+ *
+ * One piece of markup, two layouts.
+ *
+ * PLAIN (the default). Each scene is an ordinary full-width block: its photograph behind its words.
+ * This is what visitors see with reduced motion, with JavaScript off, in print, and if the journey's
+ * script fails to start (see the failsafe in intro.ts).
+ *
+ * CINEMATIC (`html[data-motion="full"]`, set before first paint by the script in intro.ts). The
+ * journey becomes a tall track holding a pinned stage. The stage is `position: sticky`, so the page
+ * scrolls natively (nothing hijacks the wheel or the finger) while the controller turns scroll
+ * position into camera movement, doorways and text. Layers, back to front:
+ *
+ *   journey-media    the scenes' photographs: the picture when 3D is not running, and the hero's
+ *                    own photograph (the largest paint) until the 3D canvas has taken over
+ *   journey-gl       the 3D canvas
+ *   journey-overlay  things laid over the picture: the hero's drapes, the dimming veil
+ *   journey-panels   each scene's words
+ *   journey-controls the scene dots
+ */
+
+.journey {
+  position: relative;
+  background: var(--charcoal);
+  color: #fffaf0;
+}
+
+/* ------------------------------------------------------------------ PLAIN LAYOUT */
+
+.journey-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* The layers dissolve, so every scene's picture and words land in the same grid row (set inline). */
+.journey-media,
+.journey-overlay,
+.journey-panels {
+  display: contents;
+}
+
+.journey-gl,
+.journey-controls,
+.journey-dim,
+.scene-hint {
+  display: none;
+}
+
+.scene-media {
+  grid-column: 1;
+  position: relative;
+  overflow: hidden;
+  min-height: 84svh;
+  background: var(--charcoal);
+}
+
+.scene-media[data-scene-media="0"] {
+  min-height: 100svh;
+}
+
+.scene-media > picture {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.scene-media > picture > img {
+  width: 100%;
+  height: 100%;
+}
+
+.journey-drapes {
+  grid-column: 1;
+  grid-row: 1;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.scene-panel {
+  grid-column: 1;
+  position: relative;
+  z-index: 2;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 7rem 1.25rem 3.25rem;
+}
+
+@media (min-width: 640px) {
+  .scene-panel {
+    padding-inline: 2rem;
+  }
+}
+
+/* The dark wash that keeps the words readable over a bright photograph. */
+.scene-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 9, 7, 0) 16%,
+    rgba(10, 9, 7, 0.8) 54%,
+    rgba(10, 9, 7, 0.95) 100%
+  );
+}
+
+.scene-copy {
+  max-width: 38rem;
+}
+
+@media (min-width: 1024px) {
+  .scene-panel {
+    justify-content: center;
+    padding: 8rem 6.56vw 5rem;
+  }
+  .scene-panel[data-align="start"] .scene-scrim {
+    background: linear-gradient(
+      90deg,
+      rgba(10, 9, 7, 0.88) 0%,
+      rgba(10, 9, 7, 0.74) 34%,
+      rgba(10, 9, 7, 0.36) 60%,
+      transparent 82%
+    );
+  }
+  .scene-panel[data-align="end"] {
+    align-items: flex-end;
+    text-align: right;
+  }
+  .scene-panel[data-align="end"] .scene-scrim {
+    background: linear-gradient(
+      270deg,
+      rgba(10, 9, 7, 0.88) 0%,
+      rgba(10, 9, 7, 0.74) 34%,
+      rgba(10, 9, 7, 0.36) 60%,
+      transparent 82%
+    );
+  }
+  .scene-panel[data-align="center"] {
+    align-items: center;
+    text-align: center;
+  }
+  .scene-panel[data-align="center"] .scene-scrim {
+    background: radial-gradient(
+      74% 68% at 50% 54%,
+      rgba(10, 9, 7, 0.9),
+      rgba(10, 9, 7, 0.62) 58%,
+      transparent 84%
+    );
+  }
+  .scene-panel[data-align="end"] .scene-copy {
+    margin-left: auto;
+  }
+  .scene-panel[data-align="center"] .scene-copy {
+    margin-inline: auto;
+  }
+  .scene-panel[data-align="end"] .scene-desc {
+    margin-left: auto;
+  }
+  .scene-panel[data-align="center"] .scene-desc {
+    margin-inline: auto;
+  }
+}
+
+/* ---------------------------------------------------------------- CINEMATIC LAYOUT */
+
+/* The track: this many screens tall, so that many screens of scrolling carry the visitor through. */
+html[data-motion="full"] .journey {
+  --journey-screens: 6.2;
+  height: calc(var(--journey-screens) * 100svh);
+}
+
+@media (min-width: 1024px) {
+  html[data-motion="full"] .journey {
+    --journey-screens: 7.6;
+  }
+}
+
+html[data-motion="full"] .journey-stage {
+  position: sticky;
+  top: 0;
+  display: block;
+  height: 100svh;
+  overflow: hidden;
+  /* A finger that starts on the stage must still scroll the page. */
+  touch-action: pan-y;
+}
+
+html[data-motion="full"] :is(.journey-media, .journey-overlay, .journey-panels, .journey-gl) {
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+html[data-motion="full"] .journey-gl {
+  z-index: 1;
+  pointer-events: none;
+}
+html[data-motion="full"] .journey-overlay {
+  z-index: 2;
+  pointer-events: none;
+}
+html[data-motion="full"] .journey-panels {
+  z-index: 3;
+  pointer-events: none;
+}
+
+html[data-motion="full"] :is(.scene-media, .journey-drapes, .scene-panel) {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  grid-row: auto;
+}
+
+/* Only the hero's photograph is on the page at the start. The others are fetched when needed. */
+html[data-motion="full"] .scene-media:not([data-scene-media="0"]) {
+  display: none;
+}
+html[data-motion="full"] .scene-media[data-near] {
+  display: block;
+}
+html[data-motion="full"] .scene-media {
+  transform-origin: var(--origin, 50% 50%);
+  will-change: transform, clip-path;
+}
+
+html[data-motion="full"] .journey-dim {
+  display: block;
+  position: absolute;
+  inset: 0;
+  background: #0a0907;
+  opacity: 0;
+}
+
+html[data-motion="full"] .scene-panel {
+  opacity: 0;
+  pointer-events: none;
+  /* Phones: words at the bottom, clear of the scene dots on the right and of the header at the top. */
+  padding: 5.5rem 3.5rem 4.75rem 1.25rem;
+}
+html[data-motion="full"] .scene-panel[data-scene-panel="0"] {
+  opacity: 1;
+}
+html[data-motion="full"] .scene-copy {
+  pointer-events: none;
+}
+html[data-motion="full"] .scene-panel[data-active] .scene-copy {
+  pointer-events: auto;
+}
+
+@media (min-width: 640px) {
+  html[data-motion="full"] .scene-panel {
+    padding-inline: 2rem 4rem;
+  }
+}
+@media (min-width: 1024px) {
+  html[data-motion="full"] .scene-panel {
+    padding: 8rem 6.56vw 5rem;
+  }
+}
+
+/* A phone held sideways: very short. Tighten everything so the words and button stay on screen. */
+@media (max-height: 520px) and (orientation: landscape) {
+  html[data-motion="full"] .scene-panel {
+    padding-top: 4.5rem;
+    padding-bottom: 2.5rem;
+    justify-content: center;
+  }
+}
+
+/* The 3D canvas: invisible until its first frame is drawn, then fades in over the photograph. */
+.journey-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.journey[data-render="gl"] .journey-canvas {
+  opacity: 1;
+}
+/* Once the canvas is up, the hero's photograph beneath it is no longer needed on screen. */
+.journey[data-render="gl"] .scene-media[data-scene-media="0"] {
+  visibility: hidden;
+  transition: visibility 0s 1s;
+}
+
+/* ------------------------------------------------------------------ SCENE DOTS */
+
+html[data-motion="full"] .journey-controls {
+  display: block;
+  position: absolute;
+  top: 50%;
+  right: max(0.25rem, env(safe-area-inset-right));
+  z-index: 4;
+  transform: translateY(-50%);
+}
+
+.journey-controls ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.journey-controls a {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  outline: none;
+}
+
+.journey-controls a::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 250, 240, 0.5);
+  box-shadow: 0 0 0 1px rgba(10, 9, 7, 0.25);
+  transition:
+    height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.4s;
+}
+
+.journey-controls a[aria-current="true"]::before {
+  height: 24px;
+  background: var(--accent-now, #e7d3a8);
+}
+
+.journey-controls a:focus-visible::before {
+  outline: 2px solid #fffaf0;
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .journey-controls a:hover::before {
+    background: #fffaf0;
+  }
+}
+
+/* "Scroll" cue at the foot of the hero: a hairline that keeps drawing downward. */
+html[data-motion="full"] .scene-hint {
+  display: flex;
+}
+
+.scene-hint-line {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 2.75rem;
+  overflow: hidden;
+  background: rgba(255, 250, 240, 0.25);
+}
+.scene-hint-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #fffaf0;
+  transform: translateY(-100%);
+  animation: scene-hint 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes scene-hint {
+  0% {
+    transform: translateY(-100%);
+  }
+  55%,
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+/* ---------------------------------------------------------------------- PRINT */
+
+@media print {
+  .journey-controls,
+  .journey-gl,
+  .scene-hint {
+    display: none !important;
+  }
+}

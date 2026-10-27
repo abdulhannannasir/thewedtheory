@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AboutMoments } from "@/components/sites/twt/about-moments";
 import {
   AboutApproach,
   AboutPhoto,
@@ -25,6 +26,7 @@ export default function AboutPage() {
       </PageIntro>
       <AboutApproach />
       <AboutProcess />
+      <AboutMoments />
       <AboutServices />
       <ClosingCta />
     </>

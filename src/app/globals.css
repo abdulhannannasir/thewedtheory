@@ -33,6 +33,13 @@
   --color-forest: var(--forest);
   --color-line: var(--line);
   --color-clay: var(--clay);
+  /* Cinematic palette: a deep charcoal for the dark scenes, champagne for light on dark, soft florals. */
+  --color-charcoal: var(--charcoal);
+  --color-champagne: var(--champagne);
+  --color-champagne-light: var(--champagne-light);
+  --color-gold: var(--gold);
+  --color-blush: var(--blush);
+  --color-ice: var(--ice);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -55,7 +62,10 @@
 
   --font-serif: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
   --font-script: var(--font-mrs-saint), "Mrs Saint Delafield", "Snell Roundhand", cursive;
+  /* Cormorant stays the voice of every headline and of the existing pages' text. Jost, a clean sans,
+     is for navigation, buttons, small labels, descriptions and the enquiry form. */
   --font-sans: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-ui: var(--font-jost), "Jost", ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
 
   --radius-sm: calc(var(--radius) * 0.6);
@@ -122,6 +132,12 @@
   --forest: #2f3b2b;
   --line: #ddd8cc;
   --clay: #8f3b2c;
+  --charcoal: #15130f;
+  --champagne: #d8c39a;
+  --champagne-light: #ece0c6;
+  --gold: #b49a62;
+  --blush: #e8c7bf;
+  --ice: #bcd3ea;
 
   --background: var(--ivory);
   --foreground: var(--ink);
@@ -164,51 +180,139 @@
       scroll-behavior: auto;
     }
   }
+  /* The full-screen picture viewer is modal: the page behind it must not scroll. */
+  body:has(dialog[open]) {
+    overflow: hidden;
+  }
 }
 
 /*
- * The opening animation (intro-splash.tsx). The script in intro.ts sets data-intro="play" on <html>
- * before first paint when the intro should run, and intro-splash.tsx later sets it to "done".
- * Without the attribute (JavaScript off, intro already seen, reduced motion) none of this applies.
+ * THE OPENING ANIMATION (intro-sequence.tsx)
+ * The script in intro.ts sets data-intro="play" on <html> before first paint when the intro should
+ * run, and intro-sequence.tsx later sets it to "done". Without the attribute (JavaScript off, intro
+ * already seen, reduced motion, Data Saver) none of this shows. Every piece starts hidden here and
+ * is revealed by the sequence's own animations.
  */
-#intro-splash {
+#intro-sequence {
   display: none;
 }
 
-html[data-intro="play"] #intro-splash {
-  display: flex;
-  /* If the script that ends the intro never runs, get out of the way anyway after 9 seconds. */
-  animation: intro-failsafe-out 0.01s linear 9s forwards;
+html[data-intro="play"] #intro-sequence {
+  display: block;
+  /* If the script that runs the intro never arrives, get out of the way anyway after 7 seconds. */
+  animation: intro-failsafe-out 0.01s linear 7s forwards;
 }
 
-/* data-intro leaves "play" the moment the dissolve starts, but the overlay must stay for it. */
-#intro-splash[data-state="leaving"] {
-  display: flex;
+/* data-intro leaves "play" the moment the hand-over to the hero starts, but the overlay must stay for it. */
+#intro-sequence[data-state="leaving"] {
+  display: block;
 }
 
-/* Fades the video's own square edges out, so no frame shows around it on any browser. */
-.intro-video {
-  -webkit-mask-image:
-    linear-gradient(to right, transparent, #000 4%, #000 96%, transparent),
-    linear-gradient(to bottom, transparent, #000 4%, #000 96%, transparent);
-  -webkit-mask-composite: source-in;
-  mask-image:
-    linear-gradient(to right, transparent, #000 4%, #000 96%, transparent),
-    linear-gradient(to bottom, transparent, #000 4%, #000 96%, transparent);
-  mask-composite: intersect;
+#intro-sequence :is(.intro-glow, .intro-plate, .intro-sweep, .intro-logo, .intro-brand, .intro-tagline) {
+  opacity: 0;
 }
 
-/* While the intro plays the hero waits behind it, then rises in as the intro dissolves. */
+/*
+ * Phase one of the sequence is pure CSS, so it starts at first paint, before any JavaScript has
+ * loaded: light gathers, the arch rises, the logo appears with a champagne sheen crossing the arch
+ * behind it, and the brand line draws in. Times are milliseconds from first paint. intro-sequence.tsx
+ * runs the second phase (the arch fills with the hero venue and opens) on the same clock.
+ *
+ * Only opacity and transform are animated here, on purpose: the browser runs those off the main
+ * thread, so the reveal keeps playing smoothly while the page's scripts are busy loading. Animating
+ * clip-path, filter or letter-spacing would freeze whenever JavaScript hydrates, then jump.
+ */
+html[data-intro="play"] .intro-glow {
+  animation: intro-fade 1100ms ease-out both;
+}
+html[data-intro="play"] .intro-plate {
+  animation: intro-plate 950ms cubic-bezier(0.22, 1, 0.36, 1) 100ms both;
+  will-change: opacity, transform;
+}
+html[data-intro="play"] .intro-logo {
+  animation: intro-fade 850ms ease-out 420ms both;
+  will-change: opacity;
+}
+html[data-intro="play"] .intro-sweep {
+  animation: intro-sweep 1400ms ease-in-out 700ms both;
+  will-change: opacity, transform;
+}
+html[data-intro="play"] .intro-brand {
+  animation: intro-rise 950ms cubic-bezier(0.22, 1, 0.36, 1) 1000ms both;
+  will-change: opacity, transform;
+}
+html[data-intro="play"] .intro-tagline {
+  animation: intro-fade 800ms ease-out 1350ms both;
+  will-change: opacity;
+}
+
+@keyframes intro-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes intro-plate {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes intro-sweep {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  20%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(430%);
+  }
+}
+@keyframes intro-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The hero seen through the arch: shut until the sequence opens it. */
+#intro-sequence .intro-window {
+  opacity: 0;
+  clip-path: inset(100% 50% 0 50%);
+}
+
+/* While the intro plays the hero waits behind it, then rises in as the intro hands over. */
 html[data-intro="play"] .hero-reveal {
   opacity: 0;
-  animation: intro-failsafe-in 0.01s linear 9s forwards;
+  animation: intro-failsafe-in 0.01s linear 7s forwards;
 }
 
 /* The floating Instagram button waits too, then pops in after the intro. */
 html[data-intro="play"] .float-btn {
   opacity: 0;
   pointer-events: none;
-  animation: intro-failsafe-in 0.01s linear 9s forwards;
+  animation: intro-failsafe-in 0.01s linear 7s forwards;
+}
+
+/* The header and the journey's controls stay out of the way of the intro, too. */
+html[data-intro="play"] .intro-hide {
+  opacity: 0;
+  pointer-events: none;
+  animation: intro-failsafe-in 0.01s linear 7s forwards;
 }
 
 @keyframes intro-failsafe-out {
@@ -223,6 +327,49 @@ html[data-intro="play"] .float-btn {
 @keyframes intro-failsafe-in {
   to {
     opacity: 1;
+  }
+}
+
+/*
+ * The cursor ring (pointer-effects.tsx), for a real mouse only. It blends with whatever is beneath
+ * it (white on dark, dark on light), ignores clicks and never replaces the normal cursor.
+ */
+.twt-cursor {
+  position: fixed;
+  top: -18px;
+  left: -18px;
+  z-index: 90;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #fff;
+  border-radius: 999px;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity 0.3s ease,
+    width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    margin 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s ease;
+}
+.twt-cursor[data-visible] {
+  opacity: 0.85;
+}
+.twt-cursor[data-active] {
+  width: 56px;
+  height: 56px;
+  margin: -10px 0 0 -10px;
+  background-color: rgb(255 255 255 / 0.14);
+}
+.twt-cursor[data-pressed] {
+  width: 28px;
+  height: 28px;
+  margin: 4px 0 0 4px;
+}
+@media print, (prefers-reduced-motion: reduce) {
+  .twt-cursor {
+    display: none;
   }
 }
 

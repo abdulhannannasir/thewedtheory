@@ -1,136 +1,254 @@
 # The Wed Theory Events
 
 Website for The Wed Theory, event planning and design in Lahore. Built with Next.js 16 (App Router),
-React 19, TypeScript, Tailwind CSS v4 and shadcn/ui.
+React 19, TypeScript, Tailwind CSS v4 and shadcn/ui, with one 3D library (three.js) used only for the
+front page's scenes.
 
 ## Run it
 
 ```bash
 npm install
 npm run dev        # http://localhost:3000
-npm run check      # lint + typecheck + production build
+npm test           # unit tests (enquiry rules, scroll timeline)
+npm run check      # lint + typecheck + tests + production build
+npm run build && npm start   # the production build, which is what visitors get
 ```
+
+Needs Node 22.18 or newer (the tests run TypeScript directly). The first time you run a build, Next fetches the Google fonts, so it needs an
+internet connection.
 
 ## What is built
 
-- **Front page** (`/`), from the approved design: a full-bleed hero (nav, logo, headline, "Plan Your
-  Event" button) over a services strip (intro, Weddings / Social Events / Corporate Events,
-  handwritten sign-off). One screen, no footer.
+- **Front page** (`/`): a short, dark opening animation (once per browser session, with Skip), then a
+  scrolling journey: the hero ("The Art of Celebration"), three event environments (a candlelit
+  wedding, a daylight social celebration, a cool corporate hall) and a finale. Below it: the three
+  service areas, how an enquiry becomes a plan (Discover, Design, Plan, Celebrate), a look at the
+  portfolio, and the enquiry form with WhatsApp. See "The front-page journey".
 - **Portfolio** (`/portfolio`): intro, five photo tiles (grand entrances, bespoke stages, floral
-  architecture, table settings, lighting), a "Close up" masonry gallery of ten details cut from those
-  photos, and a closing call to action. The gallery's tiles glide in with GSAP as they scroll into
-  view; hovering with a mouse shows each tile's caption, and touch screens always show it.
+  architecture, table settings, lighting), then a gallery of every picture on the site with category
+  filters and a full-screen viewer, and a closing call to action. Each picture is captioned with its
+  kind of event and, honestly, whether it is a concept image or a stock photo (see "Photos").
 - **About** (`/about`): intro with an arched photo, our approach, how we work (four steps), what we
-  plan, and the closing call to action.
+  plan, a pile of photographs you can drag aside (see "The card stack"), and the closing call to action.
+- **Contact** (`/contact`): the ways to reach us (WhatsApp, Instagram, Lahore) and the enquiry form
+  (name, phone, event type, date, venue, guests, budget in PKR, requirements). See "Receiving enquiries".
+- **Services** (`/services`, `/services/weddings`, `birthdays`, `social-events`, `corporate-events`):
+  an overview and a page per service with its own photographs, highlights, process, gallery and call to
+  action (WhatsApp, or the form with the event type already chosen: `/contact?service=birthdays`).
+- **Find your Wed Theory** (`/theory`): a six-question quiz that ends on one of four shareable results
+  (`/theory/candlelit-classic`, `serene-romantic`, `garden-in-bloom`, `radiant-evening`), each with a
+  WhatsApp link and a pre-filled enquiry form.
+- **Search and sharing:** every page has a title, description, canonical link and share card;
+  `robots.txt`, `sitemap.xml`, web app manifest, favicon and app icons; "ProfessionalService"
+  structured data on the front page (no ratings, reviews or invented details); a designed 404 page.
+- **Floating Instagram button** on every page; a **skip link** first on every page; a restrained
+  **cursor ring and magnetic buttons** for a real mouse only (see "Pointer effects").
 
-- **Contact** (`/contact`): the ways to reach us (WhatsApp, Instagram, Lahore) and an enquiry form.
-  There is no server behind the site, so the form checks the answers and opens WhatsApp with them
-  written out as a message. Nothing is stored.
+All pages are responsive: the nav collapses below 1024px into a full-screen menu; everything you tap has
+a 44px touch area; the front page adapts to small phones and to phones held sideways.
 
-- **Services** (`/services`, and one page each for `/services/weddings`, `birthdays`, `social-events`
-  and `corporate-events`): an overview with the four services as photo cards, then a page per service
-  with an introduction and arched photo, what we plan, three large highlights, how we work, a masonry
-  gallery, the other services, and a call to action that opens WhatsApp (or the enquiry form with the
-  event type already chosen: `/contact?service=birthdays`). Each page has its own photographs, title,
-  description and share card. Entrances, scroll-reveals, the GSAP gallery and the hover zooms follow
-  the rest of the site, and all of it switches off for visitors who prefer reduced motion. The three
-  tiles on the front page link to their pages, and "Services" in the header opens the overview.
+## The front-page journey
 
-- **Find your Wed Theory** (`/theory`): a six-question quiz (event, room, light, florals, palette,
-  guests) that ends on one of four results (`/theory/candlelit-classic`, `serene-romantic`,
-  `garden-in-bloom`, `radiant-evening`). Each result is a static, shareable page with its own palette,
-  parts, close-ups and share card, and two ways to act on it: "Plan this on WhatsApp" opens WhatsApp
-  with the answers already written out, and the enquiry form opens pre-filled. Four of the questions
-  score the result; event type and guest count only go into the message. The quiz is linked from the
-  portfolio page, the contact page, the closing call to action and the footer.
+One piece of markup, two layouts, two renderers. Files: `cinematic-journey.tsx` (markup),
+`journey-content.ts` (words, photos, looks), `journey.css` (layouts), `src/lib/journey/` (timeline and
+motion), `src/lib/gl/` (the 3D renderer).
 
-- **Search and sharing:** every page has a title, description, canonical link and a share preview card
-  (the picture WhatsApp, Instagram and Facebook show for a link), and the site has a `robots.txt`,
-  `sitemap.xml`, web app manifest, favicon and app icons, a "ProfessionalService" structured-data
-  block on the front page for search engines, and a designed 404 page.
+**Layouts.** *Plain* is the default: five full-width scenes stacked, each photograph behind its words.
+That is what visitors get with reduced motion, with JavaScript off, in print, and if the journey's script
+has not started within 10 seconds. *Cinematic* (`<html data-motion="full">`, set before first paint by the
+script in `intro.ts`) turns the scenes into one pinned stage inside a tall track. The stage is
+`position: sticky`, so the page scrolls natively: nothing hijacks the wheel or a finger.
 
-- **Floating Instagram button:** a round button at the bottom right of every page that opens the
-  studio's Instagram profile in a new tab (the Instagram app, on a phone that has it). It pops in after
-  the opening animation, grows a "Follow us" label for a mouse or the keyboard, keeps clear of phone
-  notches, sits under the phone menu and does not print.
+**Motion.** `src/lib/journey/run-journey.ts` reads how far through the track the visitor is, eases that
+into one number, and from it draws everything: `timeline.ts` (pure functions, unit-tested) says which
+scene is showing, how far the "doorway" between two scenes has opened, each scene's text opacity and
+how far the camera has pushed in. The doorway is the brand's arch. It pauses when the journey is off
+screen, and the layered version stops its loop whenever scrolling stops.
 
-- **Opening animation:** the logo reveal video (`public/videos/twt-logo-reveal.mp4`) plays full
-  screen the first time someone opens the home page in a browser session, then dissolves into the
-  hero while the headline rises in. It starts dissolving at 4.2 seconds, ends early on Skip, a tap or
-  click, or Escape, and is skipped for visitors who prefer reduced motion, on reloads and on inner
-  pages, with Data Saver on, and on slow (2G or 3G) connections, where its 430 KB is not worth the wait.
-  If the video cannot play (autoplay blocked, slow or failed load) it steps aside rather than make
-  anyone wait.
+**Renderers.** Where the device can run it, `src/lib/gl/venue-renderer.ts` draws each venue as the
+photograph plus a *depth map* (white is near): the shader shifts every pixel by an amount that depends on
+its depth as the camera pushes in and the pointer moves, so near things slide across far things, with
+real 3D drifting light (warm bokeh, petals, cool dust, twinkling sparks) in front. It is a genuine WebGL
+scene, not a flat image. Otherwise a layered fallback (the same photographs, the same arch doorways in
+CSS) runs. The 3D code is fetched only after the page has loaded and settled, on devices that qualify
+(`src/lib/gl/quality.ts`: not Data Saver or 2G/3G, enough memory and cores; three quality tiers for
+pixels, particles and picture size). It also steps itself down if frames run slow, and falls back to the
+layered scene if the browser loses the GPU. Pictures are decoded off the main thread and uploaded to the
+GPU one per frame.
 
-All pages are responsive: the nav collapses below 1024px into a full-screen menu, and grids and the
-services strip stack. Everything you tap is at least 44px tall, the hero adapts to small phones and
-to phones held sideways, and the inner pages share a footer; the front page has none.
+**Try the fallbacks.** Add `?render=css` to the address to see the layered scene, or `?render=gl` to
+force 3D (it then never gives up, even on a machine without a GPU, which is slow but lets you look at it).
+Turn on "reduce motion" in your system settings, or disable JavaScript, for the plain layout.
+
+**Keyboard and screen readers.** The scenes are real sections with headings and links, in reading order,
+so they are read whatever the layout. Tabbing to a button in a scene that is not on screen scrolls that
+scene into view. The scene dots (and "Explore Our World") scroll to a scene. The skip link jumps past the
+journey to the services.
+
+**Opening animation** (`intro-sequence.tsx`, words in `INTRO` in `content.ts`). Dark room, light gathers
+and soft motes rise; an arch of ivory light rises with the logo in it (the logo keeps its own colours
+on its own ivory; it is never recoloured or moved), a champagne sheen crosses the arch behind it, the
+brand line draws in; then the arch fills with the hero venue and opens until the venue fills the screen,
+which is pixel for pixel the page underneath. It starts at first paint using only opacity and transform
+(so it keeps playing while the page's scripts load), plays once per browser session, never for reduced
+motion, Data Saver or slow connections, has no sound, and ends at once on Skip intro, a click, a tap or
+Escape. The old logo-reveal video (`public/videos/`) is no longer used by the site; it is still in the
+repository if you want it back.
+
+**Changing a scene.** Words, photographs, crops, colour treatment and light are all in
+`journey-content.ts` (a long comment at the top lists the steps). Swapping a photograph needs a new depth
+map: add the picture to `PHOTOS` in `scripts/generate-depth-maps.py` and run it (`pip install
+onnxruntime numpy pillow`; it downloads a small open depth model the first time and writes
+`public/depth/*.webp`).
+
+## Receiving enquiries
+
+The form posts to `/api/enquiry` (`src/app/api/enquiry/route.ts`), which checks everything again on the
+server and delivers it to a destination **you configure with an environment variable**. Until you do, the
+form cannot reach the studio by itself: it says so plainly ("We couldn't send this online. Nothing has
+been sent yet") and hands the visitor a ready-made WhatsApp message. It never claims an enquiry was sent
+unless the destination accepted it.
+
+1. Pick a service that accepts a JSON POST: Formspree (a form's endpoint URL), Make or Zapier (a catch
+   webhook), n8n, a Google Apps Script web app, or your own CRM.
+2. In Vercel, open the project, Settings, Environment Variables, and add `ENQUIRY_WEBHOOK_URL` (an
+   `https://` URL; for local testing `http://localhost:...` is allowed). Optionally add
+   `ENQUIRY_WEBHOOK_TOKEN`, sent as `Authorization: Bearer <token>`. Redeploy. Neither is ever sent to
+   the browser.
+3. Send a test enquiry. It arrives as JSON with every field, plus `phoneDigits` (WhatsApp format),
+   `whatsappChat` (a `wa.me` link to the visitor), `text` (all answers as plain text for an email body),
+   `source`, `pageUrl` and `receivedAt`.
+
+For local development put the two variables in `.env.local` (it is git-ignored). Spam: a hidden field
+catches bots and an address that sends many enquiries in ten minutes is slowed down (per server instance:
+a speed bump, not a wall; add a service-side filter such as Formspree's if you need more).
+
+Business settings that are not secrets are in `src/config/business.ts`: the WhatsApp number (change it
+there and every WhatsApp link follows), the event types, the budget ranges in PKR (edit them to suit
+the events you usually plan) and the field limits. The words on the form are `CONTACT` in `content.ts`.
+
+## Photos
+
+The studio's portfolio photographs and the stand-in stock photographs are all that the site holds; none
+is a photograph of the studio's own events, and the site says so. Each gallery picture carries a
+`provenance` (`concept`, `stock` or `studio`) in `portfolio-gallery-data.ts` and the gallery prints it in
+the caption ("Concept image", "Stock photo"); set a picture to `studio` and no label is shown. A
+`location` is printed only when you set one, so add it only when the venue and the client have agreed to
+being named. The service pages and the journey's social and corporate scenes use stock photographs
+(credits in `docs/photo-credits.md`).
+
+To swap in real photography: replace the files (same names) or point the paths in `content.ts`,
+`services-content.ts`, `journey-content.ts` at new ones; for the journey, also regenerate the depth maps
+(above); run `scripts/generate-brand-assets.py` so the share cards use the new photos; keep each masonry
+item's `height` matching its picture's shape (400 is a square).
+
+The hero photo is `public/images/custom-table.jpg` (16:9, 2400 x 1350 px or larger) and
+`custom-table-mobile.jpg` (about 9:16). Keep the left calm and dark: the headline sits there.
 
 ## Where things live
 
 | Want to change | Edit |
 | --- | --- |
-| Any text, link, photo path or the WhatsApp number | `src/components/sites/twt/content.ts` |
+| The WhatsApp number, event types, budget ranges | `src/config/business.ts` |
+| Any other text, link or photo path | `src/components/sites/twt/content.ts` |
+| The journey: scene words, photographs, crops, colour treatment, light | `journey-content.ts` |
+| The services overview, process steps and portfolio preview (front page) | `home-content.ts` (the wording itself comes from `services-content.ts` and `ABOUT` in `content.ts`) |
 | Colours, fonts, animation | `src/app/globals.css`, `src/app/layout.tsx` |
-| Opening animation: video, timing, colours, skip label | `INTRO` in `content.ts` (video files in `public/videos/`) |
-| Opening animation: logic and the pre-paint check | `intro-splash.tsx`, `intro.ts`; styles at the end of `globals.css` |
-| Header and mobile menu | `src/components/sites/twt/site-header.tsx` |
-| Hero layout, photo and overlays | `src/components/sites/twt/hero.tsx` |
-| Services strip | `src/components/sites/twt/services-strip.tsx` |
-| Service icons | `src/components/sites/twt/icons.tsx` |
-| Portfolio tiles | `portfolio-grid.tsx` (copy and photos: `PORTFOLIO` in `content.ts`) |
-| Portfolio detail gallery | `portfolio-details.tsx` (pictures, captions, order: `PORTFOLIO_DETAILS` in `content.ts`; files in `public/images/details/`) |
-| The masonry component itself (layout, GSAP motion, props) | `src/components/ui/masonry-gallery.tsx` |
-| About sections | `about-sections.tsx` (copy: `ABOUT` in `content.ts`) |
-| Contact page and enquiry form | `contact-section.tsx`, `contact-form.tsx` (copy, labels, options: `CONTACT` in `content.ts`) |
-| The services overview and the four service pages: all words, photos, gallery items, calls to action | `src/components/sites/twt/services-content.ts` |
-| Service page layout and sections | `service-page.tsx`, `service-sections.tsx`; routes in `src/app/(pages)/services/` |
-| Scroll-reveal animation | `src/components/ui/reveal.tsx`, styles under "Scroll reveal" in `globals.css` |
-| The floating Instagram button (words and link: `SOCIAL.instagram` in `content.ts`) | `src/components/sites/twt/instagram-button.tsx` |
+| Journey layouts (plain and cinematic) | `src/app/journey.css` |
+| Opening animation: words, colours | `INTRO` in `content.ts`; timings in `intro-sequence.tsx` and `globals.css` ("THE OPENING ANIMATION") |
+| 3D look: shaders, light, quality tiers | `src/lib/gl/` |
+| Scroll timeline: where each doorway opens, when text fades | `src/lib/journey/timeline.ts` (then `npm test`) |
+| Header and mobile menu | `site-header.tsx` |
+| Hero words and buttons | `cinematic-hero.tsx` (copy: `HERO` in `content.ts`) |
+| Portfolio gallery: pictures, captions, provenance | `portfolio-gallery-data.ts`; layout `portfolio-gallery.tsx`, viewer `portfolio-lightbox.tsx` |
+| Portfolio tiles (the five collections) | `portfolio-grid.tsx` (copy and photos: `PORTFOLIO` in `content.ts`) |
+| The close-up masonry (service pages) | `portfolio-details.tsx`, `src/components/ui/masonry-gallery.tsx` |
+| About sections and the card stack | `about-sections.tsx`, `about-moments.tsx`, `src/components/ui/interactive-card-stack.tsx` |
+| Enquiry form and its rules | `enquiry-form.tsx`, `src/lib/enquiry.ts` (shared with the API and the tests), `src/app/api/enquiry/route.ts` |
+| The services overview and four service pages | `services-content.ts`, `service-page.tsx`, `service-sections.tsx` |
+| Quiz questions, results, logic | `theory-content.ts`, `theory.ts`, `theory-quiz.tsx`, `theory-result.tsx` |
+| Scroll-reveal animation | `src/components/ui/reveal.tsx` ("Scroll reveal" in `globals.css`) |
+| Cursor ring and magnetic buttons | `src/components/ui/pointer-effects.tsx` (mark a button `data-magnetic`) |
+| Floating Instagram button | `instagram-button.tsx` (`SOCIAL.instagram`) |
 | Footer, page intro, closing call to action | `site-footer.tsx`, `page-intro.tsx`, `closing-cta.tsx` |
-| Quiz questions, answers, scoring weights, the four results (copy, palettes, photos) | `src/components/sites/twt/theory-content.ts` |
-| Quiz logic (scoring, address and message building, form pre-fill) | `src/components/sites/twt/theory.ts` |
-| Quiz screens and result page | `theory-quiz.tsx`, `theory-result.tsx`, `theory-actions.tsx`, `theme-cards.tsx`, `theory-banner.tsx`; routes in `src/app/(pages)/theory/` |
-| Page titles, descriptions and share previews | `src/lib/metadata.ts` (`pageMetadata`), each page's `metadata`; site-wide defaults in `src/app/layout.tsx` |
-| Pages listed in the sitemap | `src/app/sitemap.ts` (add a line for any new page) |
-| The 404 page | `src/app/not-found.tsx` (copy: `NOT_FOUND` in `content.ts`) |
-| Structured data for search engines | `src/components/sites/twt/local-business-schema.tsx` |
-| Favicon, app icons, share cards | generated by `scripts/generate-brand-assets.py` (see below) |
-| Inner-page routes | `src/app/(pages)/` (the group adds the footer; it is not part of the URL) |
+| Page titles, descriptions, share previews | `src/lib/metadata.ts`, each page's `metadata`, `src/app/layout.tsx` |
+| Pages in the sitemap | `src/app/sitemap.ts` |
+| Structured data for search engines | `local-business-schema.tsx` |
+| Favicon, app icons, share cards | `scripts/generate-brand-assets.py` |
+| Depth maps for the 3D scenes | `scripts/generate-depth-maps.py` (writes `public/depth/`) |
+
+## Pointer effects
+
+For a real mouse only (never touch, never reduced motion): a thin ring trails the pointer and swells over
+anything clickable, and buttons marked `data-magnetic` lean up to 9px toward the pointer. The normal
+cursor is never hidden or replaced, the ring ignores clicks and blends with whatever is beneath it, so it
+cannot cover text. On touch screens nothing replaces them; essential information never depends on hover
+(captions sit under pictures, and touch screens always show them).
+
+## The card stack
+
+`InteractiveCardStack` (`src/components/ui/interactive-card-stack.tsx`) is a pile of cards you drag
+aside (or tap, or step through with the keys) to bring the next one forward. It uses `framer-motion`
+(11.x); the animation code is loaded after the page, not with it. Size the parent and the pile fills it:
+
+```tsx
+<div className="h-[34rem] w-80">
+  <InteractiveCardStack cards={[<img key="a" />, <div key="b">Any content</div>]} randomRotation sendToBackOnClick />
+</div>
+```
+
+| Prop | Default | What it does |
+| --- | --- | --- |
+| `cards` | `[]` | The cards, any React nodes. The first one starts on top. |
+| `randomRotation` | `false` | Tilts each card a little, by its own amount. |
+| `sensitivity` | `180` | Pixels a card must be dragged to go to the back. |
+| `sendToBackOnClick` | `false` | Clicking or tapping the top card sends it to the back. |
+| `autoplay` | `false` | Cycles by itself. Pauses on hover, while keyboard focus is inside, while dragging, while off screen and for reduced motion; shows a pause button. |
+| `autoplayDelay` | `3000` | Milliseconds between automatic moves. |
+| `pauseOnHover` | `true` | Pause autoplay while a mouse is over the pile. |
+| `animationConfig` | `{ stiffness: 260, damping: 20 }` | The spring the cards settle with. |
+| `mobileClickOnly` | `false` | On a touch screen, no dragging: a tap cycles. |
+| `label` | `"Card stack"` | What a screen reader calls the pile. |
+| `showControls` | `true` | The previous / next (and pause) buttons under the pile, in the bottom 44px of the parent. |
+| `className`, `cardClassName` | | Classes for the whole component and for each card's frame. |
+
+On a touch screen the cards drag sideways only, so the page can still be scrolled with a finger that
+starts on the pile. Cards other than the top one are hidden from screen readers and cannot be focused;
+focus the pile and use the arrow keys, Enter or Space.
 
 ## Phones
 
-The site is built phone-first and measured on a throttled phone (Pixel 7 profile, slow 4G, 4x slower
-CPU) as well as at desktop sizes. What keeps it quick on a small screen:
+The site is built phone-first and measured on a throttled phone profile (a 412px-wide viewport at 1.75x,
+slow 4G, 4x slower CPU) as well as at desktop sizes. What keeps it quick on a small screen:
 
-- **Images** are served as AVIF (WebP as the fallback), about 40% smaller than WebP alone
-  (`images.formats` in `next.config.ts`), at sizes matched to the screen (`sizes` on every `Image`).
-  The first image on a page is loaded first (`preload`); the rest load as they near the screen.
-- **Nothing visible at load waits for JavaScript.** Scroll-reveal blocks (`Reveal`) hide only what is
-  below the fold; anything on screen at load rises in with a plain CSS animation (`immediate`).
-- **Tap targets** are at least 44px tall everywhere, including text links that sit close together.
-- **The opening video** is skipped for Data Saver and slow connections (see "Opening animation").
-- **Contrast and headings** pass the automated accessibility audit on every page (Lighthouse 100).
+- **Images** are served as AVIF (WebP as the fallback), at sizes matched to the screen (`sizes` on every
+  `Image`). The first image on a page is loaded first; the rest load as they near the screen. The
+  journey's later scenes are not even on the page until the visitor is about to reach them.
+- **Nothing visible at load waits for JavaScript.** The opening animation's first phase is CSS, scroll
+  reveals hide only what is below the fold, and the hero text rises in with a plain CSS animation.
+- **The 3D is optional and late.** It loads after the page has settled, only on devices that qualify,
+  decodes pictures off the main thread, uploads them one per frame, compiles its shaders without
+  freezing the page, draws fewer pixels on phones and steps itself down if frames run slow.
+- **Code the page does not need is not shipped to it**: the picture viewer and the quiz pre-fill load
+  only when used.
+- **Tap targets** are at least 44px everywhere, including text links that sit close together.
 
-When adding images, give them `sizes` (and `preload` if one is the first thing on screen); when adding
-blocks to the top of a page, do not wrap them in `Reveal` unless they are below the first screen.
+When adding images, give them `sizes` (and `loading="eager"` if one is the first thing on screen); when
+adding blocks near the top of a page, do not wrap them in `Reveal` unless they are below the first screen.
 
 ## Service photos
 
 The birthday, social-event and corporate-event pages use stand-in stock photos from Unsplash (free for
 commercial use, no attribution required), stored in `public/images/services/<service>/`.
 `docs/photo-credits.md` lists each one with its Unsplash page. They are not photos of the studio's own
-events, so swap them for real event photography when you have it: replace the files (same names), or
-point the paths in `services-content.ts` at new ones and keep each gallery item's `height` matching its
-picture's shape (400 is a square). `python3 scripts/fetch-service-photos.py` re-creates the current set.
-Re-run `scripts/generate-brand-assets.py` afterwards so the share cards use the new photos.
+events, so swap them for real event photography when you have it. `python3 scripts/fetch-service-photos.py`
+re-creates the current set. Re-run `scripts/generate-brand-assets.py` afterwards so the share cards use
+the new photos.
 
 ## Share cards and icons
 
 The favicon (`src/app/favicon.ico`, `icon.png`, `apple-icon.png`), the web app icons
-(`public/icons/`) and the share cards (`public/share/`: the site, the quiz, one per quiz result, the
-services page and one per service) are
-generated, not drawn by hand:
+(`public/icons/`) and the share cards (`public/share/`) are generated, not drawn by hand:
 
 ```bash
 pip install pillow
@@ -139,44 +257,46 @@ python3 scripts/generate-brand-assets.py
 
 Run it again whenever the logo, the hero photo, a quiz result's name, tagline, palette or photo, or a
 service's name, headline or photo changes (the script has `THEMES` and `SERVICE_CARDS` tables that
-mirror `theory-content.ts` and `services-content.ts`, so edit both). It fetches the
-free Cormorant Garamond font the first time and refuses to write a card over 280 KB, because WhatsApp
-may ignore larger preview images.
+mirror `theory-content.ts` and `services-content.ts`, so edit both). It refuses to write a card over
+280 KB, because WhatsApp may ignore larger preview images.
 
-## Address, analytics and search
+## Deploying to Vercel
 
-- **Site address.** Share previews, canonical links, `sitemap.xml` and `robots.txt` need the site's full
+The project is a standard Next.js app: no `vercel.json` is needed.
+
+- **Preview.** Every push to a branch other than `main` (for example `claude/...`) gets its own preview
+  deployment and URL, and the pull request shows it. Preview URLs are behind Vercel sign-in. Nothing
+  on a preview touches the live site.
+- **Production.** The live site (`thewedtheory.vercel.app`) is the `main` branch. Merging a pull request
+  into `main` publishes it. Check the preview first.
+- **Environment variables** (Project, Settings, Environment Variables; set them for Production, and for
+  Preview if you want previews to deliver enquiries too): `ENQUIRY_WEBHOOK_URL` (and optionally
+  `ENQUIRY_WEBHOOK_TOKEN`), see "Receiving enquiries"; `NEXT_PUBLIC_SITE_URL` only if the address should
+  not follow Vercel's choice (below).
+- **Address.** Share previews, canonical links, `sitemap.xml` and `robots.txt` need the site's full
   address. It is taken from `NEXT_PUBLIC_SITE_URL` if set, otherwise from the production domain Vercel
-  gives the project (it follows a custom domain once one is attached), otherwise `localhost`. Set
-  `NEXT_PUBLIC_SITE_URL` (for example `https://thewedtheory.com`) in Vercel if the address should not
-  follow Vercel's choice.
+  gives the project (it follows a custom domain once one is attached), otherwise `localhost`.
 - **Analytics.** The site includes Vercel Web Analytics (`<Analytics />` in `layout.tsx`). It records
-  nothing until it is switched on: in the Vercel dashboard open the project, then Analytics, then Enable.
-  Until then its script returns a 404 that visitors never see.
+  nothing until it is switched on: open the project in Vercel, then Analytics, then Enable. Until then
+  its script returns a 404 that visitors never see (it shows as a console error in development).
 - **Search.** After the site has its final address, add it to Google Search Console and submit
   `/sitemap.xml`. Add a street address to `local-business-schema.tsx` (and claim a Google Business
   Profile) when there is a studio people can visit.
 
+## Testing
+
+`npm test` runs the unit tests in `tests/` with Node's own test runner (no extra dependency): the enquiry
+form's rules (phone formats, dates, budget, limits, the WhatsApp message, the delivery payload) and the
+scroll timeline (the doorway, text fades and camera push never overlap or run backward). `npm run check`
+adds lint, the type check and the production build. Everything visual (the opening animation, the 3D
+journey, the layered and plain fallbacks, the form, the gallery, keyboard use) is checked in a real
+browser; there is no automated browser suite in the repository.
+
 ## To do
 
-- To use a different opening video, replace the files in `public/videos/` and update `INTRO` in
-  `content.ts`. It should be square with a flat background of one colour (set that colour in
-  `INTRO.background`, as a browser shows it) and the logo centred, and small: it is downloaded on the
-  first visit. Set `INTRO.fadeAt` to the second where the motion ends. No clip for a hero background
-  video has been added; the hero is still a photo.
-
-- The hero photo is a stand-in from the existing photo set. To use the final one, replace
-  `public/images/custom-table.jpg` (16:9, 2400 x 1350 px or larger) and `custom-table-mobile.jpg`
-  (about 9:16, 1152 x 2064 px or larger), or point `HERO.photo` at new files. Keep the left of the
-  photo calm and dark: the headline sits there.
-- The portfolio photos, and the close-ups in the "Close up" gallery that are cut from them, are the
-  concept images from the earlier site. Swap in real event photography when you have it
-  (`PORTFOLIO.items` and `PORTFOLIO_DETAILS.items` in `content.ts`). For the gallery, each
-  item's `height` must match its picture's shape (400 is a square; see `MasonryItem`).
+- Replace the concept and stock photographs with the studio's own event photography (see "Photos"),
+  and set `location` on pictures once it can be named.
+- Set `ENQUIRY_WEBHOOK_URL` (see "Receiving enquiries") so the form can deliver enquiries by itself.
+- Review the budget ranges in `src/config/business.ts`.
 - The About copy describes the approach in general terms. Add the founder, a photo and real numbers
-  (years, events) when you have them.
-- "Enquire" and "Plan Your Event" open WhatsApp directly; "Contact" opens the contact page. Change
-  `WHATSAPP` in `content.ts` for a different number.
-- To receive enquiries by email or in a CRM instead of WhatsApp, replace the hand-off in `onSubmit`
-  in `contact-form.tsx` (it needs a small server route or a form service). The copy and fields can
-  stay as they are.
+  (years, events) when you have them. No testimonials are shown, because none have been supplied.

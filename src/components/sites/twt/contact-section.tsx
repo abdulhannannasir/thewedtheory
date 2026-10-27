@@ -1,6 +1,7 @@
 import { CONTACT, FOOTER, SOCIAL } from "./content";
-import { ContactForm } from "./contact-form";
+import { EnquiryForm } from "./enquiry-form";
 import { SiteLink } from "./site-link";
+import { WhatsAppCTA } from "./whatsapp-cta";
 import { THEORY_PAGE } from "./theory-content";
 
 const kicker = "text-[10px] leading-none font-medium tracking-[0.22em] text-ink-soft uppercase";
@@ -19,7 +20,7 @@ export function ContactSection() {
       className="mx-auto grid max-w-[1760px] gap-14 border-t border-line px-5 py-16 sm:px-8 lg:grid-cols-12 lg:gap-16 lg:px-[6.56vw] lg:py-24"
     >
       <div className="lg:order-2 lg:col-span-7 lg:col-start-6">
-        <ContactForm />
+        <EnquiryForm />
       </div>
 
       <div className="lg:order-1 lg:col-span-4">
@@ -50,6 +51,12 @@ export function ContactSection() {
             </dd>
           </div>
         </dl>
+
+        <WhatsAppCTA
+          variant="outline"
+          message={CONTACT.form.messageGreeting}
+          className="mt-8"
+        />
 
         <div className="mt-10">
           <h2 className={kicker}>{THEORY_PAGE.contactNote.kicker}</h2>

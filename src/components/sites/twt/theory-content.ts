@@ -68,7 +68,7 @@ export const QUIZ_STEPS: readonly QuizStep[] = [
     title: "What are we celebrating?",
     layout: "list",
     summary: "Event",
-    // These labels must match the options of the enquiry form (CONTACT.form.fields.eventType).
+    // These labels must match the options of the enquiry form (ENQUIRY.eventTypes in src/config/business.ts).
     options: [
       { id: "wedding", label: "Wedding", hint: "Your big day, or the days around it" },
       { id: "birthday", label: "Birthday", hint: "A first, a milestone or a surprise" },
