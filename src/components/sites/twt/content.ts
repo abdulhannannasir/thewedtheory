@@ -144,6 +144,8 @@ export const FOOTER = {
   tagline: "Thoughtfully planned. Beautifully celebrated.",
   location: "Lahore, Pakistan",
   exploreLabel: "Explore",
+  /** Pages listed after the main navigation in the footer's Explore list. */
+  moreLinks: [{ label: "Find your theory", href: "/theory" }],
   contactLabel: "Contact",
 } as const;
 
@@ -156,6 +158,8 @@ export const CLOSING = {
     label: "Plan Your Event",
     href: whatsapp("Hello The Wed Theory, I’d like to plan an event."),
   },
+  /** A quieter second step for visitors who are not ready to message us yet. */
+  secondary: { label: "Not sure yet? Find your Wed Theory", href: "/theory" },
 } as const;
 
 export type PortfolioItem = {
@@ -301,6 +305,24 @@ export const ABOUT = {
   },
 } as const;
 
+/** The page shown for an address that does not exist. */
+export const NOT_FOUND = {
+  eyebrow: "Page not found",
+  headline: ["This page has", "wandered off."],
+  intro: "The address may have changed, or it never existed. These will take you somewhere lovely.",
+  links: [
+    { label: "Back to the front page", href: "/" },
+    { label: "See our portfolio", href: "/portfolio" },
+    { label: "Find your Wed Theory", href: "/theory" },
+    { label: "Get in touch", href: "/contact" },
+  ],
+} as const satisfies {
+  eyebrow: string;
+  headline: readonly [string, string];
+  intro: string;
+  links: readonly Link[];
+};
+
 /**
  * THE CONTACT PAGE
  * There is no server behind this site, so the enquiry form hands over to WhatsApp: it builds a
@@ -328,6 +350,9 @@ export const CONTACT = {
     messageGreeting: "Hello The Wed Theory, I’d like to enquire about an event.",
     privacyNote: "Your details open in WhatsApp as a message. Nothing is stored on this website.",
     requiredNote: "Fields marked * are required.",
+    /** Shown above the fields when the visitor arrives from a quiz result. */
+    theoryNote: (name: string) =>
+      `Your answers from the quiz (${name}) are already filled in. Change anything you like.`,
     sent: {
       title: "Your enquiry is ready",
       body: "WhatsApp should have opened with your details. If it didn’t, use the link below.",

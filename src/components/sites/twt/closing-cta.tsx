@@ -28,6 +28,12 @@ export function ClosingCta() {
             aria-hidden="true"
           />
         </SiteLink>
+        <SiteLink
+          href={CLOSING.secondary.href}
+          className="tap-target mt-3 border-b border-cream/50 pb-[3px] text-[15px] leading-none text-cream/85 transition-colors duration-300 outline-none hover:border-cream hover:text-cream focus-visible:border-cream focus-visible:text-cream"
+        >
+          {CLOSING.secondary.label}
+        </SiteLink>
       </div>
     </section>
   );

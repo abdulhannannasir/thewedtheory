@@ -1,6 +1,7 @@
 import { CONTACT, FOOTER, SOCIAL } from "./content";
 import { ContactForm } from "./contact-form";
 import { SiteLink } from "./site-link";
+import { THEORY_PAGE } from "./theory-content";
 
 const kicker = "text-[10px] leading-none font-medium tracking-[0.22em] text-ink-soft uppercase";
 const value =
@@ -49,6 +50,19 @@ export function ContactSection() {
             </dd>
           </div>
         </dl>
+
+        <div className="mt-10">
+          <h2 className={kicker}>{THEORY_PAGE.contactNote.kicker}</h2>
+          <p className="mt-4 max-w-[24rem] text-[15.5px] leading-[1.45] text-ink-soft">
+            {THEORY_PAGE.contactNote.body}
+          </p>
+          <SiteLink
+            href={THEORY_PAGE.path}
+            className="tap-target mt-3 inline-block border-b border-ink-soft/70 pb-[3px] text-[15px] leading-none text-ink transition-colors duration-300 outline-none hover:border-ink focus-visible:border-ink"
+          >
+            {THEORY_PAGE.contactNote.link}
+          </SiteLink>
+        </div>
       </div>
     </section>
   );
