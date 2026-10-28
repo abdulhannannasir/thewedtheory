@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { ENQUIRY, WHATSAPP_NUMBER, whatsapp } from "../src/config/business.ts";
 import {
+  buildEmail,
   cleanValues,
   deliveryAccepted,
   emptyValues,
@@ -125,6 +126,32 @@ describe("messages", () => {
     assert.equal(payload.whatsappChat, "https://wa.me/923137027761");
     assert.equal(payload.source, "thewedtheory-website");
     assert.ok(payload.text.includes("Event: Wedding"));
+  });
+});
+
+describe("buildEmail", () => {
+  const payload = toDeliveryPayload(
+    valid({ name: "Ayesha\nKhan", date: "2026-12-05", details: "Rooftop mehndi" }),
+    { pageUrl: "https://example.com/contact", receivedAt: "2026-10-27T10:00:00.000Z" },
+  );
+  const email = buildEmail(payload, { from: "Studio <a@b.dev>", to: ["inbox@example.com"] });
+
+  it("addresses the studio from the configured sender", () => {
+    assert.equal(email.from, "Studio <a@b.dev>");
+    assert.deepEqual(email.to, ["inbox@example.com"]);
+  });
+  it("puts the answers, a WhatsApp link and the page in the body", () => {
+    assert.ok(email.text.includes("Event: Wedding"));
+    assert.ok(email.text.includes("Date: 5 December 2026"));
+    assert.ok(email.text.includes("Details: Rooftop mehndi"));
+    assert.ok(email.text.includes("Reply on WhatsApp: https://wa.me/923137027761"));
+    assert.ok(email.text.includes("Sent from: https://example.com/contact"));
+  });
+  it("keeps the subject on one line whatever was typed, and short", () => {
+    assert.equal(email.subject, "New enquiry: Ayesha Khan (Wedding)");
+    const long = buildEmail({ ...payload, name: "x\r\ny ".repeat(200) }, { from: "a@b.dev", to: ["c@d.dev"] });
+    assert.ok(!/[\r\n]/.test(long.subject));
+    assert.ok(long.subject.length <= 150);
   });
 });
 

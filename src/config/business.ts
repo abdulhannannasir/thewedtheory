@@ -24,15 +24,29 @@ export const whatsapp = (message: string) => `${WHATSAPP_URL}?text=${encodeURICo
 /**
  * THE ENQUIRY FORM
  *
- * Where an enquiry goes is decided on the server, from the environment variable named in
- * `destinationEnv`: a URL that accepts a JSON POST (Formspree, Make, Zapier, n8n, a Google Apps
- * Script, your own CRM). See README, "Receiving enquiries". Until it is set, the form cannot reach
- * the studio by itself, says so, and hands the visitor a ready-made WhatsApp message instead. It
- * never claims an enquiry was sent when it was not.
+ * Where an enquiry goes is decided on the server, from environment variables: an email sent
+ * through Resend (`emailEnv`), a URL that accepts a JSON POST (`destinationEnv`: Formspree, Make,
+ * Zapier, n8n, your own CRM), or both. See README, "Receiving enquiries". Until one is set, the form
+ * cannot reach the studio by itself, says so, and hands the visitor a ready-made WhatsApp message
+ * instead. It never claims an enquiry was sent when it was not.
  */
 export const ENQUIRY = {
   /** The server environment variable that holds the delivery URL. */
   destinationEnv: "ENQUIRY_WEBHOOK_URL",
+
+  /**
+   * Email delivery through Resend. All three are server environment variables, none of them
+   * reach the browser. `apiKey` is a secret; `to` is the inbox (several can be separated by commas);
+   * `from` is optional.
+   */
+  emailEnv: { apiKey: "RESEND_API_KEY", to: "ENQUIRY_EMAIL_TO", from: "ENQUIRY_EMAIL_FROM" },
+
+  /**
+   * The sender used when `from` is not set. Resend's shared test sender: it works with no domain set
+   * up, but only for sending to the address the Resend account was created with. To send from the
+   * studio's own domain, verify the domain at Resend and set `from`.
+   */
+  defaultEmailFrom: "The Wed Theory <onboarding@resend.dev>",
 
   /**
    * Event types. The first four match the service pages (see `eventType` in services-content.ts),

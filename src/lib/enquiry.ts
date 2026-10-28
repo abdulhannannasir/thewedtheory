@@ -166,6 +166,29 @@ export function toDeliveryPayload(values: EnquiryValues, meta: { pageUrl: string
   };
 }
 
+/** The request body for the email service (Resend): the enquiry as a plain-text email to the studio. */
+export function buildEmail(
+  payload: ReturnType<typeof toDeliveryPayload>,
+  { from, to }: { from: string; to: string[] },
+) {
+  const lines = [
+    "A new enquiry came in on the website.",
+    "",
+    payload.text,
+    "",
+    ...(payload.whatsappChat ? [`Reply on WhatsApp: ${payload.whatsappChat}`] : []),
+    ...(payload.pageUrl ? [`Sent from: ${payload.pageUrl}`] : []),
+    `Received: ${payload.receivedAt}`,
+  ];
+  return {
+    from,
+    to,
+    // One line, whatever the visitor typed.
+    subject: `New enquiry: ${payload.name} (${payload.eventType})`.replace(/\s+/g, " ").slice(0, 150),
+    text: lines.join("\n"),
+  };
+}
+
 /**
  * Did the destination really take the enquiry? A 2xx status alone is not proof: a Google Apps Script web
  * app that is not shared with "Anyone" (or that fails) answers 200 with a web page, and a script can answer
