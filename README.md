@@ -104,24 +104,42 @@ onnxruntime numpy pillow`; it downloads a small open depth model the first time 
 ## Receiving enquiries
 
 The form posts to `/api/enquiry` (`src/app/api/enquiry/route.ts`), which checks everything again on the
-server and delivers it to a destination **you configure with an environment variable**. Until you do, the
+server and delivers it to a destination **you configure with environment variables**. Until you do, the
 form cannot reach the studio by itself: it says so plainly ("We couldn't send this online. Nothing has
 been sent yet") and hands the visitor a ready-made WhatsApp message. It never claims an enquiry was sent
-unless the destination accepted it.
+unless a destination accepted it.
 
-1. Pick a service that accepts a JSON POST: Formspree (a form's endpoint URL), Make or Zapier (a catch
-   webhook), n8n, a Google Apps Script web app, or your own CRM.
-2. In Vercel, open the project, Settings, Environment Variables, and add `ENQUIRY_WEBHOOK_URL` (an
-   `https://` URL; for local testing `http://localhost:...` is allowed). Optionally add
-   `ENQUIRY_WEBHOOK_TOKEN`, sent as `Authorization: Bearer <token>`. Redeploy. Neither is ever sent to
-   the browser.
-3. Send a test enquiry. It arrives as JSON with every field, plus `phoneDigits` (WhatsApp format),
-   `whatsappChat` (a `wa.me` link to the visitor), `text` (all answers as plain text for an email body),
-   `source`, `pageUrl` and `receivedAt`.
+**Email to your inbox (recommended).** The site sends each enquiry as an email through
+[Resend](https://resend.com) (free: 100 emails a day, 3,000 a month).
 
-For local development put the two variables in `.env.local` (it is git-ignored). Spam: a hidden field
-catches bots and an address that sends many enquiries in ten minutes is slowed down (per server instance:
-a speed bump, not a wall; add a service-side filter such as Formspree's if you need more).
+1. Sign up at resend.com **with the inbox address that should receive enquiries** and confirm that
+   address. (Resend's shared test sender can only deliver to the address the account was created with. To
+   send to other addresses, or from your own domain, verify a domain at Resend and set
+   `ENQUIRY_EMAIL_FROM`.)
+2. In Resend, API Keys, create a key with "Sending access".
+3. In Vercel, open the project, Settings, Environment Variables, and add for **Production**:
+   `RESEND_API_KEY` (the key; mark it Sensitive) and `ENQUIRY_EMAIL_TO` (the inbox address; several can be
+   separated by commas). Optionally `ENQUIRY_EMAIL_FROM`, such as `The Wed Theory <enquiries@yourdomain>`.
+   Redeploy. None of these is ever sent to the browser.
+4. Send a test enquiry from the live form. If it does not arrive, check the spam folder first, then the
+   function logs in Vercel: the route logs the email service's own reason (an unverified sender, a wrong
+   key) but never what the visitor wrote.
+
+**Or a webhook.** Set `ENQUIRY_WEBHOOK_URL` to any service that accepts a JSON POST: Formspree (a form's
+endpoint URL), Make or Zapier (a catch webhook), n8n or your own CRM (an `https://` URL; for local testing
+`http://localhost:...` is allowed). Optionally add `ENQUIRY_WEBHOOK_TOKEN`, sent as
+`Authorization: Bearer <token>`. The JSON has every field, plus `phoneDigits` (WhatsApp format),
+`whatsappChat` (a `wa.me` link to the visitor), `text` (all answers as plain text), `source`, `pageUrl` and
+`receivedAt`.
+
+If both are set, the enquiry is sent both ways and counts as delivered if either accepted it. The route
+counts a webhook as having accepted only if it answered 2xx **and** did not answer with a web page or
+`{"ok": false}`: some services (a Google Apps Script web app that is not shared, for one) answer 200 with a
+page when something is wrong, and the form must then report that nothing was sent.
+
+For local development put the variables in `.env.local` (it is git-ignored). Spam: a hidden field catches
+bots and an address that sends many enquiries in ten minutes is slowed down (per server instance: a speed
+bump, not a wall).
 
 Business settings that are not secrets are in `src/config/business.ts`: the WhatsApp number (change it
 there and every WhatsApp link follows), the event types, the budget ranges in PKR (edit them to suit

@@ -1,16 +1,24 @@
 import { NextResponse } from "next/server";
 import { ENQUIRY } from "@/config/business";
-import { cleanValues, toDeliveryPayload, validate } from "@/lib/enquiry";
+import {
+  buildEmail,
+  cleanValues,
+  deliveryAccepted,
+  toDeliveryPayload,
+  validate,
+} from "@/lib/enquiry";
 
 /**
  * Receives an enquiry from the form and delivers it to the studio.
  *
- * WHERE IT GOES. To the URL in the server environment variable named by ENQUIRY.destinationEnv
- * (ENQUIRY_WEBHOOK_URL), as a JSON POST. Anything that accepts a webhook works: Formspree, Make,
- * Zapier, n8n, a Google Apps Script, your own CRM. The URL is never sent to the browser. If
- * ENQUIRY_WEBHOOK_TOKEN is also set it is sent as a Bearer token. See README, "Receiving enquiries".
+ * WHERE IT GOES. By email through Resend when RESEND_API_KEY and ENQUIRY_EMAIL_TO are set, and/or as a
+ * JSON POST to the URL in ENQUIRY_WEBHOOK_URL (Formspree, Make, Zapier, n8n, your own CRM; with
+ * ENQUIRY_WEBHOOK_TOKEN also set it is sent as a Bearer token). If both are set it tries both and
+ * counts the enquiry as delivered if either accepted it. None of these settings reach the browser.
+ * See README, "Receiving enquiries".
  *
- * HONESTY. It answers 200 only after the destination has accepted the enquiry. With no destination
+ * HONESTY. It answers 200 only after the destination has accepted the enquiry (a 2xx that comes with a
+ * web page or `{"ok": false}` is not acceptance: see deliveryAccepted). With no destination
  * configured it answers 503 `not_configured`, and the form then offers the visitor a ready-made
  * WhatsApp message instead of pretending anything was sent.
  *
@@ -19,6 +27,7 @@ import { cleanValues, toDeliveryPayload, validate } from "@/lib/enquiry";
  * slows down a single address that sends many.
  */
 
+const EMAIL_API_URL = "https://api.resend.com/emails";
 const MAX_BODY_BYTES = 12_000;
 const DELIVERY_TIMEOUT_MS = 8_000;
 const WINDOW_MS = 10 * 60 * 1000;
@@ -76,18 +85,48 @@ export async function POST(request: Request) {
   const errors = validate(values);
   if (Object.keys(errors).length > 0) return fail("invalid", 400, { errors });
 
-  const configured = process.env[ENQUIRY.destinationEnv];
-  if (!configured) return fail("not_configured", 503);
-  const destination = destinationUrl(configured);
-  if (!destination) {
-    console.error(`${ENQUIRY.destinationEnv} must be an https:// URL.`);
-    return fail("not_configured", 503);
-  }
+  const webhook = webhookDestination();
+  const email = emailSettings();
+  if (!webhook && !email) return fail("not_configured", 503);
 
   const pageUrl = typeof body.pageUrl === "string" ? body.pageUrl.slice(0, 300) : "";
   const payload = toDeliveryPayload(values, { pageUrl, receivedAt: new Date().toISOString() });
-  const token = process.env.ENQUIRY_WEBHOOK_TOKEN;
 
+  // Every configured route is tried; the enquiry counts as delivered if at least one accepted it.
+  const results = await Promise.all([
+    webhook ? sendToWebhook(webhook, payload) : false,
+    email ? sendEmail(email, payload) : false,
+  ]);
+  if (!results.some(Boolean)) return fail("delivery_failed", 502);
+  return NextResponse.json({ ok: true });
+}
+
+type Payload = ReturnType<typeof toDeliveryPayload>;
+
+/** The delivery URL, if one is set and acceptable. */
+function webhookDestination(): URL | null {
+  const configured = process.env[ENQUIRY.destinationEnv];
+  if (!configured) return null;
+  const url = destinationUrl(configured);
+  if (!url) console.error(`${ENQUIRY.destinationEnv} must be an https:// URL.`);
+  return url;
+}
+
+/** The email settings, if the API key and the inbox are both set. */
+function emailSettings() {
+  const apiKey = process.env[ENQUIRY.emailEnv.apiKey];
+  const to = (process.env[ENQUIRY.emailEnv.to] ?? "")
+    .split(",")
+    .map((address) => address.trim())
+    .filter(Boolean);
+  if (!apiKey || to.length === 0) return null;
+  const from = process.env[ENQUIRY.emailEnv.from]?.trim() || ENQUIRY.defaultEmailFrom;
+  return { apiKey, to, from };
+}
+
+/** POSTs the enquiry as JSON to the configured URL. True only if the destination really accepted it. */
+async function sendToWebhook(destination: URL, payload: Payload): Promise<boolean> {
+  const token = process.env.ENQUIRY_WEBHOOK_TOKEN;
   try {
     const response = await fetch(destination, {
       method: "POST",
@@ -99,15 +138,50 @@ export async function POST(request: Request) {
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(DELIVERY_TIMEOUT_MS),
     });
-    if (!response.ok) {
-      // The status only: never log what the visitor wrote.
-      console.error(`Enquiry destination answered ${response.status}.`);
-      return fail("delivery_failed", 502);
-    }
-    return NextResponse.json({ ok: true });
+    const answer = (await response.text()).slice(0, 2_000);
+    const accepted = deliveryAccepted({
+      ok: response.ok,
+      contentType: response.headers.get("content-type"),
+      body: answer,
+    });
+    // The status only: never log what the visitor wrote.
+    if (!accepted) console.error(`Enquiry destination did not confirm (status ${response.status}).`);
+    return accepted;
   } catch (error) {
     console.error("Enquiry could not be delivered:", error instanceof Error ? error.name : "error");
-    return fail("delivery_failed", 502);
+    return false;
+  }
+}
+
+/** Emails the enquiry to the studio through Resend. True only if Resend accepted it. */
+async function sendEmail(
+  settings: NonNullable<ReturnType<typeof emailSettings>>,
+  payload: Payload,
+): Promise<boolean> {
+  const endpoint = destinationUrl(process.env.ENQUIRY_EMAIL_API_URL || EMAIL_API_URL);
+  if (!endpoint) return false;
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${settings.apiKey}`,
+        "User-Agent": "thewedtheory-website",
+      },
+      body: JSON.stringify(buildEmail(payload, { from: settings.from, to: settings.to })),
+      signal: AbortSignal.timeout(DELIVERY_TIMEOUT_MS),
+    });
+    if (!response.ok) {
+      // The service's own reason (such as an unverified sender) helps the studio fix it; it never
+      // contains what the visitor wrote.
+      const reason = (await response.text().catch(() => "")).slice(0, 300);
+      console.error(`Email service answered ${response.status}: ${reason}`);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Enquiry email could not be sent:", error instanceof Error ? error.name : "error");
+    return false;
   }
 }
 
