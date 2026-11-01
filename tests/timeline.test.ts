@@ -76,4 +76,24 @@ describe("scene controls", () => {
       assert.equal(activeScene(progressForScene(scene, COUNT), COUNT), scene);
     }
   });
+
+  it("never drops back to the first scene in the middle of a doorway, where all the words are hidden", () => {
+    // Progress through the segment from scene `from` to the next, between the words going out and coming in.
+    const last = COUNT - 1;
+    for (let from = 1; from < last; from += 1) {
+      for (const fraction of [0.73, 0.76, 0.79, 0.82, 0.83]) {
+        const progress = (from + fraction) / last;
+        const frame = frameAt(progress, COUNT);
+        assert.ok(Math.max(...frame.text) < 0.05, "this position should have no words showing");
+        const shown = activeScene(progress, COUNT);
+        assert.ok(shown === from || shown === from + 1, `fraction ${fraction} of segment ${from} lit scene ${shown}`);
+      }
+    }
+  });
+
+  it("follows the doorway: the scene being left until it is half open, then the one being entered", () => {
+    const last = COUNT - 1;
+    assert.equal(activeScene((1 + 0.73) / last, COUNT), 1);
+    assert.equal(activeScene((1 + 0.83) / last, COUNT), 2);
+  });
 });

@@ -72,13 +72,20 @@ real 3D drifting light (warm bokeh, petals, cool dust, twinkling sparks) in fron
 scene, not a flat image. Otherwise a layered fallback (the same photographs, the same arch doorways in
 CSS) runs. The 3D code is fetched only after the page has loaded and settled, on devices that qualify
 (`src/lib/gl/quality.ts`: not Data Saver or 2G/3G, enough memory and cores; three quality tiers for
-pixels, particles and picture size). It also steps itself down if frames run slow, and falls back to the
-layered scene if the browser loses the GPU. Pictures are decoded off the main thread and uploaded to the
-GPU one per frame.
+pixels, particles and picture size). The phone tiers are deliberately lean (a lower resolution, one depth
+pass, fewer and smaller particles). While you scroll, a device that cannot hold about 45 frames a second
+draws fewer pixels, in steps, and if even the lowest resolution runs below about 25 frames a second the page
+switches to the layered scene (`src/lib/gl/frame-governor.ts`, with unit tests); it also falls back if the
+browser loses the GPU. A phone draws the 3D scene at a lower rate once the page is still, which keeps it
+cool. In a doorway each pixel draws only the venue(s) it shows, not both. Pictures are decoded off the main
+thread and uploaded to the GPU one per frame.
 
 **Try the fallbacks.** Add `?render=css` to the address to see the layered scene, or `?render=gl` to
 force 3D (it then never gives up, even on a machine without a GPU, which is slow but lets you look at it).
-Turn on "reduce motion" in your system settings, or disable JavaScript, for the plain layout.
+Turn on "reduce motion" in your system settings, or disable JavaScript, for the plain layout. Add `?fps=1` to
+show a small readout (which renderer, how many frames a second are drawn, the drawing resolution): the way to
+check how the page runs on a real phone. The frame rate reads lower than the screen's when the page is still,
+because the 3D scene is drawn less often then.
 
 **Keyboard and screen readers.** The scenes are real sections with headings and links, in reading order,
 so they are read whatever the layout. Tabbing to a button in a scene that is not on screen scrolls that

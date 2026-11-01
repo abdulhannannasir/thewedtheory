@@ -11,8 +11,13 @@
  * apart.
  *
  * It does as little as it can: no loop while the journey is off screen or the tab is hidden, and the
- * CSS version stops its loop whenever the scroll settles. The 3D code is imported only on devices
- * that can run it, once the page has painted and the intro (if any) has finished.
+ * CSS version stops its loop whenever the scroll settles. On a phone the 3D scene is drawn at a lower
+ * rate once the visitor stops scrolling (only the drifting light is moving), which keeps the device
+ * cool and leaves it ready for the next flick. The 3D code is imported only on devices that can run
+ * it, once the page has painted and the intro (if any) has finished.
+ *
+ * `?fps=1` in the address shows a small readout of the frame rate and drawing resolution, for
+ * checking how the page runs on a real phone.
  */
 
 import type { GlScene } from "../gl/scene-types";
@@ -60,6 +65,14 @@ export function startJourney(track: HTMLElement, scenes: readonly GlScene[]): ()
   let stageHeight = stage.clientHeight;
   const pointer: [number, number] = [0, 0];
   let lastDot = -1;
+  // Phones and tablets draw the 3D scene less often once the page is still (a mouse pointer, which
+  // moves the picture, needs every frame, so the desktop tier does not).
+  const throttleWhenStill = tier !== "high";
+  const STILL_AFTER_MS = 250;
+  const STILL_FRAME_MS = 1000 / 24;
+  let lastMoveAt = 0;
+  let lastDrawAt = 0;
+  let redraw = true;
   type StyleProperty = "opacity" | "transform" | "clipPath" | "visibility" | "zIndex";
   const written = new Map<HTMLElement, Partial<Record<StyleProperty, string>>>();
 
@@ -73,13 +86,30 @@ export function startJourney(track: HTMLElement, scenes: readonly GlScene[]): ()
     element.style[property] = value;
   };
 
+  /** Sets or clears a marker attribute only when it differs, so a frame that changes nothing costs nothing. */
+  const setFlag = (element: HTMLElement, name: string, on: boolean) => {
+    if (element.hasAttribute(name) === on) return;
+    if (on) element.setAttribute(name, "");
+    else element.removeAttribute(name);
+  };
+
   // --- Reading the scroll ----------------------------------------------------------------------
 
-  const readProgress = () => {
+  // Where the track sits on the page, measured now and again whenever the layout changes, so a frame
+  // reads only the scroll position. Measuring the layout on every frame, straight after styles were
+  // written, makes the browser recalculate it in the middle of the frame.
+  let trackTop = 0;
+  let trackRange = 0;
+  let measuredAt = 0;
+  const measure = () => {
     const rect = track.getBoundingClientRect();
-    const range = rect.height - stage.offsetHeight;
-    return range > 0 ? clamp01(-rect.top / range) : 0;
+    trackTop = rect.top + window.scrollY;
+    trackRange = rect.height - stage.offsetHeight;
+    measuredAt = performance.now();
   };
+  measure();
+
+  const readProgress = () => (trackRange > 0 ? clamp01((window.scrollY - trackTop) / trackRange) : 0);
 
   /** Where, in page pixels, scene `index` is fully shown. */
   const scrollTopFor = (index: number) => {
@@ -114,8 +144,7 @@ export function startJourney(track: HTMLElement, scenes: readonly GlScene[]): ()
       setStyle(panel, "opacity", opacity.toFixed(3));
       const lift = index === frame.to && frame.to !== frame.from ? (1 - opacity) * 26 : -(1 - opacity) * 16;
       setStyle(copies[index], "transform", `translate3d(0, ${lift.toFixed(1)}px, 0)`);
-      if (opacity > 0.6) panel.setAttribute("data-active", "");
-      else panel.removeAttribute("data-active");
+      setFlag(panel, "data-active", opacity > 0.6);
     }
     // The hero's drapes lift away as the first doorway starts to open.
     if (drapes) {
@@ -141,8 +170,7 @@ export function startJourney(track: HTMLElement, scenes: readonly GlScene[]): ()
       const incoming = index === frame.to && frame.to !== frame.from && frame.arch > 0.0005;
       // Photographs start loading when they are one scene away.
       const near = index >= frame.from - 1 && index <= frame.to + 1;
-      if (near) element.setAttribute("data-near", "");
-      else element.removeAttribute("data-near");
+      setFlag(element, "data-near", near);
 
       if (!current && !incoming) {
         setStyle(element, "visibility", "hidden");
@@ -158,11 +186,34 @@ export function startJourney(track: HTMLElement, scenes: readonly GlScene[]): ()
     setStyle(dim, "opacity", (frame.arch * 0.4).toFixed(3));
   };
 
-  const draw = (now: number) => {
+  /** `moving` is false for the slower frames drawn while the page is still: the words and dots cannot change then. */
+  const draw = (now: number, moving: boolean) => {
     const frame = frameAt(shown, count);
-    applyText(frame);
-    if (mode === "gl" && renderer) renderer.render(frame, now / 1000, pointer);
+    if (moving) applyText(frame);
+    if (mode === "gl" && renderer) renderer.render(frame, now / 1000, pointer, moving);
     else applyLayers(frame);
+  };
+
+  // `?fps=1`: a small readout for looking at how the page runs on a real phone.
+  let hud: HTMLElement | null = null;
+  let hudFrames = 0;
+  let hudSince = 0;
+  if (new URLSearchParams(window.location.search).has("fps")) {
+    hud = document.createElement("div");
+    hud.setAttribute("aria-hidden", "true");
+    hud.style.cssText =
+      "position:fixed;left:8px;bottom:8px;z-index:2147483000;padding:4px 7px;border-radius:6px;background:rgba(0,0,0,.72);color:#9fffa8;font:11px/1.35 ui-monospace,monospace;white-space:pre;pointer-events:none";
+    document.body.appendChild(hud);
+  }
+  const updateHud = (now: number) => {
+    if (!hud) return;
+    hudFrames += 1;
+    if (now - hudSince < 1000) return;
+    const fps = (hudFrames * 1000) / (now - hudSince);
+    hudFrames = 0;
+    hudSince = now;
+    const resolution = renderer ? `${renderer.pixelRatio().toFixed(2)}x` : "-";
+    hud.textContent = `${mode === "gl" ? "3D" : "layered"} (${tier})\n${fps.toFixed(0)} fps drawn, ${resolution}`;
   };
 
   // --- The loop --------------------------------------------------------------------------------
@@ -173,15 +224,30 @@ export function startJourney(track: HTMLElement, scenes: readonly GlScene[]): ()
     const dt = Math.min(0.1, Math.max(0, (now - lastNow) / 1000));
     lastNow = now;
 
+    // Re-measure now and then in case something above the journey changed the page's layout.
+    if (now - measuredAt > 1500) measure();
     target = readProgress();
     const gap = target - shown;
+    const before = shown;
     // A jump (an anchor link, a dragged scrollbar) lands at once rather than flying through every scene.
     if (Math.abs(gap) > 0.35) shown = target;
     else shown += gap * (1 - Math.exp(-(fine ? 8 : 12) * dt));
     const settled = Math.abs(target - shown) < 0.0001;
     if (settled) shown = target;
 
-    draw(now);
+    // Anything that changed what is on screen counts as movement, a jump that lands at once included.
+    if (!settled || shown !== before) lastMoveAt = now;
+    // The page has been still for a moment: only the drifting light is moving, so draw it less often.
+    const still = mode === "gl" && throttleWhenStill && settled && now - lastMoveAt > STILL_AFTER_MS;
+    if (still && !redraw && now - lastDrawAt < STILL_FRAME_MS - 2) {
+      schedule();
+      return;
+    }
+    redraw = false;
+    lastDrawAt = now;
+
+    draw(now, !still);
+    updateHud(now);
 
     // The 3D scene always has light drifting, so it keeps going while visible. The layered one
     // needs a frame only while something is still moving.
@@ -203,6 +269,7 @@ export function startJourney(track: HTMLElement, scenes: readonly GlScene[]): ()
             visible = entry.isIntersecting;
             if (visible) {
               lastNow = performance.now();
+              redraw = true;
               schedule();
             }
           },
@@ -220,11 +287,15 @@ export function startJourney(track: HTMLElement, scenes: readonly GlScene[]): ()
       ? new ResizeObserver(() => {
           stageWidth = stage.clientWidth;
           stageHeight = stage.clientHeight;
+          measure();
           renderer?.resize();
+          redraw = true;
           schedule();
         })
       : null;
   resizeObserver?.observe(stage);
+  resizeObserver?.observe(track);
+  window.addEventListener("load", measure);
 
   const onPointerMove = (event: PointerEvent) => {
     if (event.pointerType !== "mouse") return;
@@ -236,6 +307,7 @@ export function startJourney(track: HTMLElement, scenes: readonly GlScene[]): ()
   const onVisibility = () => {
     if (!document.hidden) {
       lastNow = performance.now();
+      redraw = true;
       schedule();
     }
   };
@@ -289,6 +361,7 @@ export function startJourney(track: HTMLElement, scenes: readonly GlScene[]): ()
         mode = "gl";
         track.dataset.render = "gl";
         media.forEach((element) => element.removeAttribute("data-near"));
+        redraw = true;
         schedule();
       },
       onLost: fallBackToLayers,
@@ -335,7 +408,7 @@ export function startJourney(track: HTMLElement, scenes: readonly GlScene[]): ()
   track.dataset.render = "css";
   target = shown = readProgress();
   lastNow = performance.now();
-  draw(lastNow);
+  draw(lastNow, true);
   // Arriving on a link like /#scene-weddings: go straight to that scene.
   const arrived = /^#scene-(.+)$/.exec(window.location.hash);
   if (arrived) {
@@ -353,12 +426,14 @@ export function startJourney(track: HTMLElement, scenes: readonly GlScene[]): ()
     observer?.disconnect();
     resizeObserver?.disconnect();
     window.removeEventListener("scroll", onScroll);
+    window.removeEventListener("load", measure);
     window.removeEventListener("pointermove", onPointerMove);
     document.removeEventListener("visibilitychange", onVisibility);
     track.removeEventListener("click", onClick);
     track.removeEventListener("focusin", onFocusIn);
     renderer?.dispose();
     renderer = null;
+    hud?.remove();
     track.removeAttribute("data-journey-ready");
     track.removeAttribute("data-render");
     // Leave nothing behind for the next mount (React Strict Mode mounts twice in development).

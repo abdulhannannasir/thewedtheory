@@ -13,6 +13,11 @@ export interface QualitySettings {
   textureWidth: 1080 | 1200 | 1920;
   /** How many drifting light particles are drawn. */
   particles: number;
+  /**
+   * The largest a particle may be drawn, in CSS pixels. Big soft sprites overlap a lot of the screen,
+   * and every overlap is blended again, so on a phone this costs more than the count does.
+   */
+  maxParticleSize: number;
   /** Extra passes that make the depth shift more accurate around edges (1 or 2). */
   depthPasses: 1 | 2;
   /** Film grain strength; 0 switches it off. */
@@ -21,10 +26,15 @@ export interface QualitySettings {
   pointerParallax: boolean;
 }
 
+// The phone profiles ("medium" and "low") are deliberately lean: the photographs are soft and the words
+// over them are ordinary text, so a lower resolution, a single depth pass and a lighter dusting of
+// particles are hard to see, while the saved work is the difference between a smooth scroll and a
+// stuttering one. If a phone still cannot keep up, the page lowers the resolution further by itself
+// (see frame-governor.ts) and, as a last resort, uses the layered scene.
 const SETTINGS: Record<Exclude<QualityTier, "off">, QualitySettings> = {
-  high: { maxPixelRatio: 2, textureWidth: 1920, particles: 220, depthPasses: 2, grain: 0.035, pointerParallax: true },
-  medium: { maxPixelRatio: 1.5, textureWidth: 1200, particles: 90, depthPasses: 2, grain: 0.02, pointerParallax: false },
-  low: { maxPixelRatio: 1, textureWidth: 1080, particles: 40, depthPasses: 1, grain: 0, pointerParallax: false },
+  high: { maxPixelRatio: 2, textureWidth: 1920, particles: 220, maxParticleSize: 190, depthPasses: 2, grain: 0.035, pointerParallax: true },
+  medium: { maxPixelRatio: 1.25, textureWidth: 1200, particles: 64, maxParticleSize: 110, depthPasses: 1, grain: 0.015, pointerParallax: false },
+  low: { maxPixelRatio: 1, textureWidth: 1080, particles: 32, maxParticleSize: 80, depthPasses: 1, grain: 0, pointerParallax: false },
 };
 
 type NetworkInformation = { saveData?: boolean; effectiveType?: string };

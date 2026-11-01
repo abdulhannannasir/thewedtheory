@@ -31,6 +31,7 @@ import {
   WebGLRenderer,
 } from "three";
 import { clamp01, type JourneyFrame } from "../journey/timeline";
+import { createFrameGovernor } from "./frame-governor";
 import type { QualitySettings } from "./quality";
 import type { GlScene, GlSource, ParticleKind } from "./scene-types";
 import {
@@ -52,8 +53,14 @@ export interface VenueRendererOptions {
 }
 
 export interface VenueRenderer {
-  /** Draws the scene for `frame`. `time` is in seconds; `pointer` is -1..1 on both axes. */
-  render(frame: JourneyFrame, time: number, pointer: readonly [number, number]): void;
+  /**
+   * Draws the scene for `frame`. `time` is in seconds; `pointer` is -1..1 on both axes. `scrolling` is
+   * whether the visitor is moving through the page: only those frames say how fast the device is,
+   * because a still page is drawn at a lower rate on purpose.
+   */
+  render(frame: JourneyFrame, time: number, pointer: readonly [number, number], scrolling: boolean): void;
+  /** The pixel ratio the canvas is drawn at right now (it can fall below the quality setting). */
+  pixelRatio(): number;
   /** Matches the canvas to its container; call when the container's size changes. */
   resize(): void;
   dispose(): void;
@@ -180,7 +187,6 @@ export function createVenueRenderer(
 
   const gl = renderer.getContext();
   const maxPoint = (gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE) as Float32Array)[1] || 64;
-  const maxAnisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
 
   let disposed = false;
   let pixelRatio = Math.min(window.devicePixelRatio || 1, quality.maxPixelRatio);
@@ -195,7 +201,10 @@ export function createVenueRenderer(
 
   const quadMaterial = new ShaderMaterial({
     vertexShader: QUAD_VERTEX,
-    fragmentShader: QUAD_FRAGMENT.replace(/DEPTH_PASSES/g, String(quality.depthPasses)),
+    fragmentShader: QUAD_FRAGMENT.replace(/DEPTH_PASSES/g, String(quality.depthPasses)).replace(
+      /GRAIN_ENABLED/g,
+      quality.grain > 0 ? "1" : "0",
+    ),
     depthTest: false,
     depthWrite: false,
     uniforms: {
@@ -245,6 +254,7 @@ export function createVenueRenderer(
       uAspect: { value: 1 },
       uSize: { value: 1 },
       uMaxPoint: { value: maxPoint },
+      uPointCap: { value: quality.maxParticleSize },
       uTwinkle: { value: 0 },
       uDrift: { value: new Vector2() },
       uCamera: { value: new Vector2() },
@@ -317,10 +327,11 @@ export function createVenueRenderer(
         const color = new Texture(colorPicture.source);
         color.flipY = !colorPicture.flipped;
         color.colorSpace = NoColorSpace;
+        // A full-screen picture that faces the camera squarely is sampled the same way in every
+        // direction, so anisotropic filtering (the default of 1 means off) would only cost time.
         color.generateMipmaps = true;
         color.minFilter = LinearMipmapLinearFilter;
         color.magFilter = LinearFilter;
-        color.anisotropy = maxAnisotropy;
         const depth = new Texture(depthPicture.source);
         depth.flipY = !depthPicture.flipped;
         depth.colorSpace = NoColorSpace;
@@ -400,7 +411,7 @@ export function createVenueRenderer(
   const pointerSmooth = new Vector2();
   const cameraSmooth = new Vector2();
   let lastTime = 0;
-  let slowFrames = 0;
+  const governor = createFrameGovernor();
 
   function resize() {
     if (disposed) return;
@@ -449,23 +460,26 @@ export function createVenueRenderer(
     (u[`uLift${slot}`].value as Vector3).set(grade.lift[0], grade.lift[1], grade.lift[2]);
   }
 
-  function render(frame: JourneyFrame, time: number, pointer: readonly [number, number]) {
+  function render(
+    frame: JourneyFrame,
+    time: number,
+    pointer: readonly [number, number],
+    scrolling: boolean,
+  ) {
     if (disposed) return;
 
-    // Frame pacing: if the device keeps missing its frames, draw fewer pixels; if even that is not enough, give up.
+    // Frame pacing: a device that cannot hold about 45 frames a second while scrolling draws fewer
+    // pixels (the photographs are soft, so this is hard to see); if even the lowest resolution
+    // cannot keep up, the page switches to the layered scene.
     const dt = lastTime ? time - lastTime : 0;
     lastTime = time;
-    if (dt > 0.045 && dt < 0.5) slowFrames += 1;
-    else slowFrames = Math.max(0, slowFrames - 2);
-    if (slowFrames > 45) {
-      slowFrames = 0;
-      if (pixelRatio > minPixelRatio) {
-        pixelRatio = Math.max(minPixelRatio, pixelRatio - 0.25);
-        resize();
-      } else {
-        options.onStruggle();
-        return;
-      }
+    const decision = governor.record(dt, scrolling, pixelRatio <= minPixelRatio);
+    if (decision === "lower") {
+      pixelRatio = Math.max(minPixelRatio, pixelRatio - 0.25);
+      resize();
+    } else if (decision === "give-up") {
+      options.onStruggle();
+      return;
     }
 
     // Anything the visitor is about to reach starts loading in good time.
@@ -535,5 +549,5 @@ export function createVenueRenderer(
     if (!disposed) options.onLost();
   });
 
-  return { render, resize, dispose };
+  return { render, resize, dispose, pixelRatio: () => pixelRatio };
 }

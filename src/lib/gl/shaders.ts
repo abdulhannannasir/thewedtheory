@@ -25,7 +25,7 @@ void main() {
 }
 `;
 
-/** `DEPTH_PASSES` is substituted when the material is built (1 or 2). */
+/** `DEPTH_PASSES` (1 or 2) and `GRAIN_ENABLED` (1 or 0) are substituted when the material is built. */
 export const QUAD_FRAGMENT = /* glsl */ `
 precision highp float;
 
@@ -56,11 +56,13 @@ vec2 coverUV(vec2 uv, vec4 c) {
   return vec2(c.z + uv.x * c.x, 1.0 - (c.w + (1.0 - uv.y) * c.y));
 }
 
+#if GRAIN_ENABLED
 float hash(vec2 p) {
   p = fract(p * vec2(123.34, 456.21));
   p += dot(p, p + 45.32);
   return fract(p.x * p.y);
 }
+#endif
 
 vec3 venue(sampler2D col, sampler2D dep, vec4 cover, vec4 motion, vec4 tint, vec4 tone, vec3 lift, vec2 uv) {
   float push = motion.w;
@@ -93,9 +95,15 @@ vec3 venue(sampler2D col, sampler2D dep, vec4 cover, vec4 motion, vec4 tint, vec
 
 void main() {
   vec2 uv = vUv;
-  vec3 color = venue(uColA, uDepA, uCoverA, uMotionA, uTintA, uToneA, uLiftA, uv);
 
-  if (uArch > 0.0005) {
+  // While a doorway is open the shape of the arch decides, pixel by pixel, which venue is seen.
+  // Work that out first, so each pixel only draws the venue(s) it shows: a pixel well outside the
+  // doorway never looks at the next venue, and one well inside never looks at the current one.
+  // (Drawing both everywhere doubles the cost of every frame of every doorway.)
+  float inside = 0.0;
+  float dist = 0.0;
+  bool doorway = uArch > 0.0005;
+  if (doorway) {
     // The doorway: an arch (straight sides, semicircular top) that grows from a small portal
     // standing on the floor to far larger than the screen.
     float minSide = min(uRes.x * 0.62, uRes.y * 0.42);
@@ -108,20 +116,32 @@ void main() {
     vec2 q = vec2(abs(gl_FragCoord.x - 0.5 * uRes.x), gl_FragCoord.y - baseY);
     float r = 0.5 * width;
     float capY = height - r;
-    float dist = q.y > capY ? length(vec2(q.x, q.y - capY)) - r : q.x - r;
+    dist = q.y > capY ? length(vec2(q.x, q.y - capY)) - r : q.x - r;
     dist = max(dist, -q.y);
-    float inside = 1.0 - smoothstep(-1.0, 1.0, dist);
+    inside = 1.0 - smoothstep(-1.0, 1.0, dist);
+  }
 
-    // The next venue starts further away and approaches as the doorway opens.
-    float approach = mix(0.62, 1.0, uArch);
-    vec2 uvB = (uv - 0.5) / approach + 0.5;
-    vec3 next = venue(uColB, uDepB, uCoverB, uMotionB, uTintB, uToneB, uLiftB, uvB);
+  vec3 color = vec3(0.0);
+  if (inside < 0.999) {
+    color = venue(uColA, uDepA, uCoverA, uMotionA, uTintA, uToneA, uLiftA, uv);
+  }
+
+  if (doorway) {
+    vec3 next = vec3(0.0);
+    if (inside > 0.001) {
+      // The next venue starts further away and approaches as the doorway opens.
+      float approach = mix(0.62, 1.0, uArch);
+      vec2 uvB = (uv - 0.5) / approach + 0.5;
+      next = venue(uColB, uDepB, uCoverB, uMotionB, uTintB, uToneB, uLiftB, uvB);
+    }
 
     vec3 rim = vec3(1.0, 0.86, 0.62) * (exp(-abs(dist) / 4.0) * 0.55 + exp(-max(dist, 0.0) / 46.0) * 0.14) * (1.0 - uArch);
     color = mix(color * (1.0 - 0.38 * uArch), next, inside) + rim;
   }
 
+#if GRAIN_ENABLED
   color += (hash(gl_FragCoord.xy + fract(uTime) * 91.7) - 0.5) * uGrain;
+#endif
   gl_FragColor = vec4(color, 1.0);
 }
 `;
@@ -135,6 +155,7 @@ uniform float uViewHeight; // drawing buffer height in pixels
 uniform float uAspect;
 uniform float uSize;
 uniform float uMaxPoint;
+uniform float uPointCap;   // the largest a particle may be, in CSS pixels (a quality setting)
 uniform float uTwinkle;
 uniform vec2 uDrift;
 uniform vec2 uCamera;      // pointer parallax, world units
@@ -161,11 +182,11 @@ void main() {
 
   float world = (0.035 + 0.075 * aSeed.w) * uSize;
   float px = world * uViewHeight * 0.5 / (TAN_HALF_FOV * dist);
-  gl_PointSize = clamp(px, 1.5 * uPixelRatio, min(uMaxPoint, 190.0 * uPixelRatio));
+  gl_PointSize = clamp(px, 1.5 * uPixelRatio, min(uMaxPoint, uPointCap * uPixelRatio));
 
   float fade = smoothstep(0.7, 3.2, dist) * (1.0 - smoothstep(17.0, 25.0, dist));
   float twinkle = mix(1.0, 0.55 + 0.45 * sin(uTime * (1.1 + aSeed.w * 2.6) + aSeed.z * 60.0), uTwinkle);
-  float soft = 0.4 + 0.6 * (1.0 - smoothstep(0.0, 1.0, px / (140.0 * uPixelRatio)));
+  float soft = 0.4 + 0.6 * (1.0 - smoothstep(0.0, 1.0, px / (0.74 * uPointCap * uPixelRatio)));
   vAlpha = fade * twinkle * soft;
   vAngle = aSeed.w * 6.2831 + uTime * (aSeed.x - 0.5) * 0.9;
 }
