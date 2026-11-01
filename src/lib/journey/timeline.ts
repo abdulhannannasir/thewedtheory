@@ -87,10 +87,14 @@ export function frameAt(progress: number, count: number, firstSpan = 1): Journey
 export const progressForScene = (index: number, count: number) =>
   count <= 1 ? 0 : clamp01(index / (count - 1));
 
-/** The scene whose text is most visible at `progress`: for highlighting the right scene control. */
+/**
+ * The scene whose text is most visible at `progress`: for highlighting the right scene control. In the
+ * middle of a doorway both scenes' words are hidden; the control then follows the doorway (the scene
+ * being entered once it is more than half open) instead of dropping back to the first scene.
+ */
 export function activeScene(progress: number, count: number): number {
-  const { text } = frameAt(progress, count);
+  const { text, from, to, arch } = frameAt(progress, count);
   let best = 0;
   for (let scene = 1; scene < text.length; scene += 1) if (text[scene] > text[best]) best = scene;
-  return best;
+  return text[best] < 0.02 ? (arch > 0.5 ? to : from) : best;
 }
