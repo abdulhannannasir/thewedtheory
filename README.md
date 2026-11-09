@@ -99,8 +99,8 @@ brand line draws in; then the arch fills with the hero venue and opens until the
 which is pixel for pixel the page underneath. It starts at first paint using only opacity and transform
 (so it keeps playing while the page's scripts load), plays once per browser session, never for reduced
 motion, Data Saver or slow connections, has no sound, and ends at once on Skip intro, a click, a tap or
-Escape. The old logo-reveal video (`public/videos/`) is no longer used by the site; it is still in the
-repository if you want it back.
+Escape. (An earlier version of the intro was a video. It was removed from `public/` once nothing used it, and
+it is still in this repository's git history if you want it back.)
 
 **Changing a scene.** Words, photographs, crops, colour treatment and light are all in
 `journey-content.ts` (a long comment at the top lists the steps). Swapping a photograph needs a new depth
@@ -301,9 +301,12 @@ The project is a standard Next.js app: no `vercel.json` is needed.
 - **Address.** Share previews, canonical links, `sitemap.xml` and `robots.txt` need the site's full
   address. It is taken from `NEXT_PUBLIC_SITE_URL` if set, otherwise from the production domain Vercel
   gives the project (it follows a custom domain once one is attached), otherwise `localhost`.
-- **Analytics.** The site includes Vercel Web Analytics (`<Analytics />` in `layout.tsx`). It records
-  nothing until it is switched on: open the project in Vercel, then Analytics, then Enable. Until then
-  its script returns a 404 that visitors never see (it shows as a console error in development).
+- **Analytics and real-visitor speed.** The site includes Vercel Web Analytics (`<Analytics />`) and Vercel
+  Speed Insights (`<SpeedInsights />`), both in `layout.tsx`. Each records nothing until it is switched on:
+  open the project in Vercel, then Analytics (or Speed Insights), then Enable. Until then its script returns a
+  404 that visitors never see (it shows as a console error in development). Speed Insights reports how fast
+  pages really load and respond on visitors' own devices (Core Web Vitals), split by page and device, with no
+  cookies: it is how to learn how the site runs on real phones, which a lab test cannot say.
 - **Search.** After the site has its final address, add it to Google Search Console and submit
   `/sitemap.xml`. Add a street address to `local-business-schema.tsx` (and claim a Google Business
   Profile) when there is a studio people can visit.
