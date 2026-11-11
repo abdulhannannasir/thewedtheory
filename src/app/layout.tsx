@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Jost, Mrs_Saint_Delafield } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SITE_CARD } from "@/lib/metadata";
 import { SITE_URL } from "@/lib/site";
 import { BRAND } from "@/components/sites/twt/content";
@@ -29,11 +30,14 @@ const jost = Jost({
   display: "swap",
 });
 
-// A flowing handwritten script, the closest open match to the sign-off in the design.
+// A flowing handwritten script, the closest open match to the sign-off in the design. It is used for
+// one thing only, the 01 / 02 / 03 numerals on the front page's services list, far below the fold, so
+// it is not preloaded: every other page would otherwise download it (19 KB) and never draw it.
 const script = Mrs_Saint_Delafield({
   variable: "--font-mrs-saint",
   subsets: ["latin"],
   weight: "400",
+  preload: false,
 });
 
 const DESCRIPTION = `Wedding planning and event design in ${BRAND.city}. ${BRAND.name} plans weddings, social celebrations, birthdays and corporate events, tailored to you. Enquire today.`;
@@ -91,6 +95,7 @@ export default function RootLayout({
         <InstagramButton />
         <PointerEffects />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
