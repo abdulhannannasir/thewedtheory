@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Studio · The Wed Theory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="studio-embed.css">
+<style>
+  /* Hide everything except studio + proposal */
+  .nav nav a[data-v="home"],
+  .nav nav a[data-v="portfolio"],
+  .nav nav a[data-v="enquiries"] { display: none !important; }
+  footer { display: none; }
+  body { padding-top: 0; }
+  .studio-close {
+    position: fixed; top: 12px; right: 16px; z-index: 100;
+    background: var(--umber-2); color: var(--ivory); border: 0;
+    width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+    font-size: 20px; line-height: 1; display: flex; align-items: center; justify-content: center;
+  }
+  .studio-close:hover { background: var(--gold); }
+</style>
+</head>
+<body>
+<button class="studio-close" id="close-studio" aria-label="Close Design Studio">×</button>
+<header class="nav">
+  <div class="wrap">
+    <a href="#studio" aria-label="The Wed Theory Design Studio"><img src="img/logo.png" alt="The Wed Theory" style="height:36px"></a>
+    <nav id="nav" aria-label="Sections">
+      <a href="#studio" data-v="studio">Design Studio</a>
+      <a href="#proposal" data-v="proposal">Proposal</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <section class="view" id="v-home" hidden></section>
+  <section class="view" id="v-portfolio" hidden></section>
+  <section class="view" id="v-studio">
+    <div class="wrap sec" style="padding-block-start:28px">
+      <div class="sec-head" style="margin-bottom:14px">
+        <div><p class="eyebrow">Design Studio</p><h2>See the room before it exists</h2></div>
+        <p class="muted small">Pick a venue, a photo or a live street, answer four style questions, then swap any layer. Drag to orbit, pinch to zoom.</p>
+      </div>
+      <div class="qnav" id="events" style="margin-bottom:.8rem;align-items:center"></div>
+      <div class="stepper" id="stepper"></div>
+      <div class="studio">
+        <div class="stage3d">
+          <div class="vp" id="vp">
+            <div id="pano" hidden></div>
+            <img class="photo" id="vp-photo" alt="" hidden>
+            <canvas id="gl" aria-label="3D preview of the event design"></canvas>
+            <canvas id="mask" aria-label="Foreground mask" hidden></canvas>
+            <div class="handles" id="handles" hidden></div>
+            <div class="hud" id="hud"></div>
+            <div class="views" id="views"></div>
+            <div id="vp-ba" hidden></div>
+          </div>
+          <div class="vbar" id="vbar"></div>
+          <div class="dials" id="dials"></div>
+        </div>
+        <aside class="panel" id="panel"></aside>
+      </div>
+    </div>
+  </section>
+  <section class="view" id="v-proposal"></section>
+  <section class="view" id="v-enquiries" hidden></section>
+</main>
+<div id="modal" hidden></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="file" accept="image/*" hidden>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="data.js"></script>
+<script src="scene.js"></script>
+<script src="app.js"></script>
+<script>
+  // Force start on studio view
+  if (typeof S !== 'undefined') {
+    S.view = 'studio';
+    if (typeof R !== 'undefined' && R.studio) R.studio();
+  }
+  document.getElementById('close-studio').addEventListener('click', () => {
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'close-studio' }, '*');
+    } else {
+      history.back();
+    }
+  });
+</script>
+</body>
+</html>
