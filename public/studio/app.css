@@ -1,0 +1,48 @@
+/* THE WED THEORY — consultation app: portfolio, design studio, proposal, enquiries */
+:root{
+  /* layout: ivory editorial pages, umber cinematic bands, one gold hairline accent; studio is a two-pane workbench */
+  --ivory:#f0ede2; --paper:#f9f6ee; --umber:#1d150d; --umber-2:#2c2117; --ink:#2a2118; --muted:#74685a;
+  --gold:#a9864a; --gold-soft:#d5ba80; --sage:#66724f; --blush:#ecd9cd; --line:rgba(42,33,24,.16); --line-d:rgba(240,237,226,.18);
+  --ok:#3f6b4a; --warn:#9a5b1e;
+  --display:"Cormorant Garamond","Cormorant",Georgia,"Times New Roman",serif;
+  --body:"Jost","Avenir Next","Helvetica Neue",Arial,sans-serif;
+  --script:"Mrs Saint Delafield","Snell Roundhand",cursive;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ivory);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%}
+img{max-width:100%;display:block}
+h1,h2,h3,h4{font-family:var(--display);font-weight:500;line-height:1.05;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:clamp(1.9rem,3.6vw,3rem)} h3{font-size:1.55rem} h4{font-size:1.2rem}
+p{margin:0}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.eyebrow{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:500}
+.script{font-family:var(--script);font-size:2.4rem;line-height:1;color:var(--gold)}
+.muted{color:var(--muted)} .small{font-size:.86rem} .num{font-variant-numeric:tabular-nums}
+.wrap{max-width:1280px;margin:0 auto;padding:0 clamp(16px,3.5vw,44px)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:46px;padding:0 1.25rem;border:1px solid var(--ink);background:transparent;border-radius:0;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{background:var(--ink);color:var(--ivory)}
+.btn.solid{background:var(--ink);color:var(--ivory)} .btn.solid:hover{background:var(--gold);border-color:var(--gold)}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#fff} .btn.gold:hover{background:var(--ink);border-color:var(--ink)}
+.btn.light{border-color:var(--ivory);color:var(--ivory)} .btn.light:hover{background:var(--ivory);color:var(--umber)}
+.btn.sm{min-height:38px;padding:0 .85rem;font-size:.7rem} .btn[disabled]{opacity:.4;pointer-events:none}
+.btn.wa{background:#1f7a4d;border-color:#1f7a4d;color:#fff} .btn.wa:hover{background:#17603c}
+.chip{display:inline-flex;align-items:center;min-height:40px;padding:0 1rem;border:1px solid var(--line);background:transparent;border-radius:999px;font-size:.84rem;cursor:pointer}
+.chip[aria-pressed="true"],.chip.on{background:var(--ink);color:var(--ivory);border-color:var(--ink)}
+.tag{display:inline-block;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;padding:.2rem .5rem;border:1px solid currentColor}
+.tag.sample{color:var(--warn)} .tag.feat{color:var(--gold)} .tag.ok{color:var(--ok)}
+.nav{position:sticky;top:0;z-index:30;background:rgba(240,237,226,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.nav nav a{padding:.7rem .8rem;font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;border-bottom:2px solid transparent}
+.nav nav a.on{border-color:var(--gold)}
+.sec.dark{background:var(--umber);color:var(--ivory)} .sec.dark .muted{color:#b9ad9a}
+.hero{position:relative;height:min(74vh,660px);min-height:440px;overflow:hidden;background:var(--umber);color:var(--ivory)}
+.hero .slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;animation:heroFade 28s infinite}
+.hero .scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(23,17,10,.78),rgba(23,17,10,.25) 62%,rgba(23,17,10,.1)),linear-gradient(0deg,rgba(23,17,10,.55),transparent 45%)}
+.hero h1{font-size:clamp(2.8rem,7.4vw,6rem);max-width:11ch}
+.hero .sub{margin:.9rem 0 1.6rem;font-size:.82rem;letter-spacing:.24em;text-transform:uppercase}
+.div-card{position:relative;aspect-ratio:3/4;overflow:hidden;color:var(--ivory);cursor:pointer;border:0;padding:0;text-align:left;background:var(--umber)}
+.div-card .t{position:absolute;inset:auto 0 0 0;padding:1.4rem;background:linear-gradient(0deg,rgba(23,17,10,.88),transparent)}
+.div-card h3{font-size:1.7rem;margin:.3rem 0 .5rem}
+.steps div{border-top:1px solid var(--line-d);padding-top:1rem;counter-increment:s}
