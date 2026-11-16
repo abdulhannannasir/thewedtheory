@@ -9,6 +9,7 @@ import { ArrowRight, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BRAND, NAV } from "./content";
 import { SiteLink } from "./site-link";
+import { DesignStudioButton } from "./design-studio-button";
 
 /** The home link is current only on the home page; any other link also stays lit on the pages inside it (Services on /services/birthdays). */
 const isCurrent = (href: string, pathname: string) =>
@@ -49,6 +50,8 @@ export function SiteHeader() {
                 </Link>
               );
             })}
+            {/* Design Studio — next to Portfolio */}
+            <DesignStudioButton variant="text" className="ml-1 text-[15px] tracking-[0.02em]" />
           </nav>
 
           <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}>
@@ -94,6 +97,11 @@ export function SiteHeader() {
                       {link.label}
                     </SiteLink>
                   ))}
+                  {/* Design Studio in mobile menu */}
+                  <DesignStudioButton
+                    variant="text"
+                    className="font-serif text-[34px] leading-none font-light tracking-[0.01em]"
+                  />
                   <SiteLink
                     href={NAV.enquire.href}
                     onClick={() => setMenuOpen(false)}
