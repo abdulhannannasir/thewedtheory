@@ -1,0 +1,27 @@
+/* Adapted for The Wed Theory live site palette */
+:root{
+  --ivory:#f0ede2;
+  --paper:#f9f6ee;
+  --umber:#15130f;
+  --umber-2:#2f3b2b;
+  --ink:#35342a;
+  --muted:#6b675b;
+  --gold:#b49a62;
+  --gold-soft:#d8c39a;
+  --sage:#66724f;
+  --blush:#e8c7bf;
+  --line:rgba(53,52,42,.14);
+  --line-d:rgba(240,237,226,.2);
+  --ok:#3f6b4a;
+  --warn:#9a5b1e;
+  --display:"Cormorant Garamond","Cormorant",Georgia,serif;
+  --body:"Jost","Avenir Next","Helvetica Neue",Arial,sans-serif;
+  --script:"Mrs Saint Delafield",cursive;
+}
+/* Soften studio-specific chrome so it feels native */
+.nav{background:rgba(240,237,226,.96);border-bottom:1px solid var(--line)}
+.btn.gold{background:var(--gold);border-color:var(--gold)}
+.btn.solid{background:var(--umber-2);border-color:var(--umber-2);color:var(--ivory)}
+.btn.solid:hover{background:var(--gold);border-color:var(--gold)}
+.chip.on,.chip[aria-pressed="true"]{background:var(--umber-2);color:var(--ivory);border-color:var(--umber-2)}
+.sec.dark{background:var(--umber-2)}
